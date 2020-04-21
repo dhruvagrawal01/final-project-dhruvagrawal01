@@ -16,11 +16,16 @@ class MyApp : public cinder::app::App {
   void setup() override;
   void update() override;
   void draw() override;
+  // Displays a counter of the current score (snake size)
   void DrawMyScore() const;
+  // Displays a counter of the time elapsed
   void DrawTime() const;
   void keyDown(cinder::app::KeyEvent) override;
   void mouseDown(cinder::app::MouseEvent event) override;
+  // Adds a bullet at the passed position
   void AddBullet(const cinder::vec2 &pos);
+
+ private:
   b2World *mWorld_;
   std::vector<b2Body *> mBullets_;
   mylibrary::LeaderBoard leaderboard_;
