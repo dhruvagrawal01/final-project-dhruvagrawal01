@@ -8,4 +8,4 @@
     - Added a basic player class
  - **4/21/20**
     - Added bullet release on mouse click
-    - Added a basic status bar
+    - Added a basic status bar            
