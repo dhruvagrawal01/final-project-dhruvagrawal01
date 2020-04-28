@@ -17,26 +17,8 @@ class Alien {
   size_t y;
 
  public:
-  Alien(b2World* mWorld_, size_t x, size_t y) {
-    b2BodyDef bodyDef;
-    bodyDef.type = b2_dynamicBody;
-    bodyDef.position.Set(x, y);
-
-    body = mWorld_->CreateBody(&bodyDef);
-
-    body->SetUserData((void*)"alien");
-
-    b2PolygonShape alien;
-    alien.SetAsBox(20, 20);
-
-    b2FixtureDef fixtureDef;
-    fixtureDef.shape = &alien;
-    fixtureDef.density = 1.0f;
-
-    body->CreateFixture(&fixtureDef);
-  }
-
-  b2Body* GetBody() { return body; }
+  Alien(b2World* mWorld_, size_t x, size_t y);
+  b2Body* GetBody();
 };
 
 }  // namespace mylibrary

@@ -16,38 +16,23 @@ namespace mylibrary {
 
 class Player {
   b2Body* body;
+  int x = 50;
+  int y = 450;
 
  public:
-  Player() : name("Random"), score(0), time(0) {}
+  Player() = default;
   Player(const std::string& name, size_t score, double time)
       : name(name), score(score), time(time) {}
+
   std::string name;
   size_t score;
   double time;
 
-  size_t x;
-  size_t y;
-
-  void SetBody(b2World* mWorld_) {
-    b2BodyDef bodyDef;
-    bodyDef.type = b2_kinematicBody;
-    // bodyDef.position.Set(location.Row(), location.Col());
-    bodyDef.position.Set(x, y);
-
-    body = mWorld_->CreateBody(&bodyDef);
-
-    body->SetUserData((void*)"player");
-
-    b2PolygonShape dynamicBox;
-    dynamicBox.SetAsBox(40, 40);
-
-    b2FixtureDef fixtureDef;
-    fixtureDef.shape = &dynamicBox;
-    fixtureDef.density = 1.0f;
-
-    body->CreateFixture(&fixtureDef);
-  }
-  b2Body* GetBody() { return body; }
+  void SetBody(b2World* mWorld_);
+  b2Body* GetBody();
+  int GetX();
+  void ChangeY(int toAdd);
+  int GetY();
 };
 
 }  // namespace mylibrary

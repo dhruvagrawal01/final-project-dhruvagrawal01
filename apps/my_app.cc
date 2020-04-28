@@ -32,18 +32,15 @@ void MyApp::setup() {
   mWorld_ = new b2World(gravity);
   timer_.start();
   AddShield();
-  player_.x = 50;
-  player_.y = 450;
-  // player_.SetBody(mWorld_);
 }
 
-void MyApp::AddBullet(int a, int b) {
+void MyApp::AddBullet(int x, int y) {
   // Taken from:
   // https://github.com/cinder/Cinder/tree/master/blocks/Box2D/
 
   b2BodyDef bodyDef;
   bodyDef.type = b2_dynamicBody;
-  bodyDef.position.Set(a, b);
+  bodyDef.position.Set(x, y);
 
   b2Body* body = mWorld_->CreateBody(&bodyDef);
 
@@ -128,17 +125,11 @@ void MyApp::draw() {
     AddAlien();
   }
 
-  //    if (aliens_.empty()) {
-  //      AddAlien();
-  //    }
-
   for (const auto& bullet : mBullets_) {
     cinder::gl::color(1, 0, 0);
 
     cinder::gl::pushModelMatrix();
     cinder::gl::translate(bullet->GetPosition().x, bullet->GetPosition().y);
-    // cinder::gl::translate(player_.GetBody()->GetPosition().x,
-    // player_.GetBody()->GetPosition().y);
     cinder::gl::drawSolidCircle(cinder::vec2(0, 0), kRadius);
     bullet->SetLinearVelocity(b2Vec2(40.0f, 0.0f));
     cinder::gl::popModelMatrix();
@@ -148,9 +139,7 @@ void MyApp::draw() {
     cinder::gl::color(1, 1, 1);
 
     cinder::gl::pushModelMatrix();
-    // cinder::gl::translate(alien.x, alien.y);
     cinder::gl::translate(alien->GetPosition().x, alien->GetPosition().y);
-    // cinder::gl::translate(alien.x, alien.y);
     cinder::Rectf drawRect(-20, -20, 20, 20);
     cinder::gl::draw(alien_texture_, drawRect);
     cinder::gl::popModelMatrix();
@@ -208,26 +197,19 @@ void MyApp::DrawTime() const {
 void MyApp::keyDown(KeyEvent event) {
   switch (event.getCode()) {
     case KeyEvent::KEY_UP: {
-      //      if (player_.location.Col() - 40 >= 0) {
-      //        player_.location.ChangeCol(-10);
-      //      }
-      if (player_.y - 40 >= 0) {
-        player_.y -= 10;
+      if (player_.GetY() - 40 >= 0) {
+        player_.ChangeY(-10);
       }
       break;
     }
     case KeyEvent::KEY_DOWN: {
-      //      if (player_.location.Col() + 40 <= getWindowHeight()) {
-      //        player_.location.ChangeCol(10);
-      //      }
-      if (player_.y + 40 <= getWindowHeight()) {
-        player_.y += 10;
+      if (player_.GetY() + 40 <= getWindowHeight()) {
+        player_.ChangeY(10);
       }
       break;
     }
     case KeyEvent::KEY_SPACE: {
-      // AddBullet(player_.location.Row(), player_.location.Col());
-      AddBullet(player_.x + 40, player_.y);
+      AddBullet(player_.GetX() + 40, player_.GetY());
       break;
     }
   }

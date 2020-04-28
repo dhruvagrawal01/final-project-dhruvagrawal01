@@ -18,25 +18,8 @@ class Shield {
   size_t y;
 
  public:
-  Shield(b2World* mWorld_, size_t x, size_t y) {
-    b2BodyDef bodyDef;
-    bodyDef.type = b2_staticBody;
-    bodyDef.position.Set(x, y);
-
-    body = mWorld_->CreateBody(&bodyDef);
-    body->SetUserData((void*)"shield");
-
-    b2PolygonShape shield;
-    shield.SetAsBox(20, 30);
-
-    b2FixtureDef fixtureDef;
-    fixtureDef.shape = &shield;
-    fixtureDef.density = 1.0f;
-
-    body->CreateFixture(&fixtureDef);
-  }
-
-  b2Body* GetBody() { return body; }
+  Shield(b2World* mWorld_, size_t x, size_t y);
+  b2Body* GetBody();
 };
 
 }  // namespace mylibrary
