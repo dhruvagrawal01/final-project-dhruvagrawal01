@@ -39,8 +39,7 @@ void MyApp::setup() {
 
 void MyApp::AddBullet(int a, int b) {
   // Taken from:
-  // https://github.com/cinder/Cinder/blob/master/blocks/Box2D/templates
-  // /Basic%20Box2D/src/_TBOX_PREFIX_App.cpp
+  // https://github.com/cinder/Cinder/tree/master/blocks/Box2D/
 
   b2BodyDef bodyDef;
   bodyDef.type = b2_dynamicBody;
@@ -90,6 +89,29 @@ void MyApp::AddShield() {
 void MyApp::update() {
   for (int i = 0; i < 10; ++i) {
     mWorld_->Step(1 / 30.0f, 10, 10);
+    // Taken from:
+    // https://www.iforce2d.net/b2dtut/
+    for (b2Contact* contact = mWorld_->GetContactList(); contact;
+         contact = contact->GetNext()) {
+      if (contact->IsTouching()) {
+        b2Body* b1 = contact->GetFixtureA()->GetBody();
+        b2Body* b2 = contact->GetFixtureB()->GetBody();
+
+        if (b1->GetUserData() == "alien") {
+          mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), b2),
+                          mBullets_.end());
+          mAliens_.erase(std::remove(mAliens_.begin(), mAliens_.end(), b1),
+                         mAliens_.end());
+          mWorld_->DestroyBody(b1);
+          mWorld_->DestroyBody(b2);
+        } else if (b1->GetUserData() == "shield") {
+          mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), b2),
+                          mBullets_.end());
+          mWorld_->DestroyBody(b2);
+        }
+
+      }  // do something with the contact
+    }
   }
 }
 
