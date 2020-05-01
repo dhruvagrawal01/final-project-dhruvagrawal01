@@ -6,6 +6,7 @@
 #include <Box2D/Dynamics/Contacts/b2Contact.h>
 #include <Box2D/Dynamics/b2World.h>
 #include <cinder/app/App.h>
+#include <cinder/audio/audio.h>
 #include <cinder/gl/Texture.h>
 
 #include "mylibrary/alien.h"
@@ -30,6 +31,9 @@
 
 namespace myapp {
 
+using cinder::audio::SourceFileRef;
+using cinder::audio::VoiceRef;
+
 class MyApp : public cinder::app::App {
  public:
   MyApp();
@@ -42,15 +46,18 @@ class MyApp : public cinder::app::App {
   void DrawTime() const;
   void keyDown(cinder::app::KeyEvent) override;
   // Adds a bullet at the passed position
-  void AddBullet(int x, int y);
+  void AddBullet(int x, int y, bool is_alien);
   void AddShip();
   void AddAlien();
   void AddShield();
+  void DrawGameOver();
 
  private:
+  std::chrono::time_point<std::chrono::system_clock> last_time_;
   b2World *mWorld_;
   std::vector<b2Body *> mBullets_;
   std::vector<b2Body *> mAliens_;
+  std::vector<b2Body *> first_row_;
   std::vector<b2Body *> mShields_;
   mylibrary::LeaderBoard leaderboard_;
   cinder::Timer timer_;
@@ -58,6 +65,17 @@ class MyApp : public cinder::app::App {
   cinder::gl::Texture2dRef ship_texture_;
   cinder::gl::Texture2dRef alien_texture_;
   cinder::gl::Texture2dRef shield_texture_;
+  int gameState;
+  int score_ = 0;
+  // Cinder SourFileRef object with the background music file
+  SourceFileRef alien_killed;
+  // Cinder SourceFileRef object with the munch noise file
+  SourceFileRef player_killed;
+  // Cinder VoiceRef object with the background music file
+  VoiceRef alien_killed_voice_;
+  // Cinder VoiceRef object with the munch noise file
+  VoiceRef player_killed_voice_;
+  // Cinder Timer object to keep track of the time elapsed
 };
 
 }  // namespace myapp

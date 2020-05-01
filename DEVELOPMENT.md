@@ -19,3 +19,8 @@
 - **4/28/20**
    - Expanded collision detection to shields
    - Organized code by adding Alien and Shield class   
+- **4/29/20**
+   - Added functionality for aliens to shoot back
+- **4/30/20**
+   - Added audio when aliens or player dies
+   - Added Game Over screen   

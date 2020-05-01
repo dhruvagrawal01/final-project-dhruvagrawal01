@@ -11,7 +11,7 @@ Alien::Alien(b2World* mWorld_, size_t x, size_t y) {
   this->y = y;
 
   b2BodyDef bodyDef;
-  bodyDef.type = b2_dynamicBody;
+  bodyDef.type = b2_staticBody;
   bodyDef.position.Set(x, y);
 
   body = mWorld_->CreateBody(&bodyDef);

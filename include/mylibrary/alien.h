@@ -9,6 +9,7 @@
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Dynamics/b2World.h>
+
 namespace mylibrary {
 
 class Alien {
