@@ -24,3 +24,6 @@
 - **4/30/20**
    - Added audio when aliens or player dies
    - Added Game Over screen   
+- **5/1/20**
+   - Added gflags for taking the player's name
+   - Added player's details to the leaderboard at the end of the game   

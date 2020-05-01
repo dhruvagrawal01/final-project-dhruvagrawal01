@@ -79,14 +79,21 @@ FetchContent_Declare(
 
 # Adds catch2 library. This is a header only library.
 FetchContent_GetProperties(catch2)
-if(NOT catch2_POPULATED)
+if (NOT catch2_POPULATED)
     FetchContent_Populate(catch2)
     # This is overkill since we only need a single file. Though it is a clean solution.
     add_library(catch2 INTERFACE)
     target_include_directories(catch2 INTERFACE ${catch2_SOURCE_DIR}/single_include)
-endif()
+endif ()
 
 # Add more CMake libraries here ...
+
+# Command-line parsing library
+FetchContent_Declare(
+        gflags
+        GIT_REPOSITORY https://github.com/gflags/gflags.git
+        GIT_TAG v2.2.2
+)
 
 FetchContent_Declare(
         sqlite-modern-cpp
@@ -99,6 +106,13 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/alex85k/sqlite3-cmake.git
         GIT_TAG v3.24.0
 )
+
+# Adds gflags::gflags
+FetchContent_GetProperties(gflags)
+if (NOT gflags_POPULATED)
+    FetchContent_Populate(gflags)
+    add_subdirectory(${gflags_SOURCE_DIR} ${gflags_BINARY_DIR})
+endif ()
 
 # Adds sqlite-modern-cpp library.
 FetchContent_GetProperties(sqlite-modern-cpp)
