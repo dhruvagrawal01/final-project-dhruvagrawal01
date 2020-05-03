@@ -15,6 +15,7 @@
 #include <gflags/gflags.h>
 
 #include "mylibrary/alien.h"
+#include "mylibrary/engine.h"
 #include "mylibrary/leaderboard.h"
 #include "mylibrary/shield.h"
 
@@ -35,22 +36,27 @@ class MyApp : public cinder::app::App {
   // Displays a counter of the time elapsed
   void DrawTime() const;
   // Adds a bullet at the passed position
-  void AddBullet(int x, int y, bool is_alien);
+  //  void AddBullet(int x, int y, bool is_alien);
   void AddShip();
-  void AddAlien();
-  void AddShield();
+  //  void AddAlien();
+  //  void AddShield();
   void DrawGameOver();
+  void DrawBullets();
+  void DrawAliens();
+  void DrawShields();
+  void ResetGame();
+
   void TakeAction(b2Contact *contact);
   // Reset game?
   // Pause?
 
  private:
-  b2World *mWorld_;
+  //  b2World *mWorld_;
   const std::string player_name_;
-  std::vector<b2Body *> mBullets_;
-  std::vector<b2Body *> mAliens_;
-  std::vector<b2Body *> first_row_;
-  std::vector<b2Body *> mShields_;
+  //  std::vector<b2Body *> mBullets_;
+  //  std::vector<b2Body *> mAliens_;
+  //  std::vector<b2Body *> first_row_;
+  //  std::vector<b2Body *> mShields_;
   std::chrono::time_point<std::chrono::system_clock> last_time_;
   std::vector<mylibrary::Player> top_players_;
   // A vector of Player objects containing the current player's high scores
@@ -71,6 +77,7 @@ class MyApp : public cinder::app::App {
   // Cinder VoiceRef object with the munch noise file
   VoiceRef player_killed_voice_;
   // Cinder Timer object to keep track of the time elapsed
+  mylibrary::Engine engine_;
 };
 
 }  // namespace myapp

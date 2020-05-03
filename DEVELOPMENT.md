@@ -27,3 +27,7 @@
 - **5/1/20**
    - Added gflags for taking the player's name
    - Added player's details to the leaderboard at the end of the game   
+- **5/3/20**
+   - Refactored code by adding Engine class to separate functionality
+   - ~~Fix bug on respawning alien wave~~
+   - Made player motion smoother by setting velocity
