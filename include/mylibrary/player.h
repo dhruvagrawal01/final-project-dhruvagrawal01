@@ -20,7 +20,7 @@ class Player {
   int y = 450;
 
  public:
-  Player() = default;
+  Player() : name("Random"), score(0), time(0) {}
   Player(const std::string& name, size_t score, double time)
       : name(name), score(score), time(time) {}
 
@@ -30,9 +30,7 @@ class Player {
 
   void SetBody(b2World* mWorld_);
   b2Body* GetBody();
-  int GetX();
-  void ChangeY(int toAdd);
-  int GetY();
+  void Reset();
 };
 
 }  // namespace mylibrary

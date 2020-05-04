@@ -60,7 +60,6 @@ ResultantAction Engine::TakeAction(b2Contact* contact) {
     mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), b2),
                     mBullets_.end());
   }
-  // Check if both bullets collide
   return ResultantAction::RandomCollision;
 }
 
@@ -102,18 +101,6 @@ void Engine::AddBullet(int x, int y, bool is_alien) {
   mBullets_.push_back(body);
 }
 
-// void Engine::AddShip() {
-//  player_.SetBody(mWorld_);
-//
-//  cinder::gl::color(0.68, 0.68, 0.68);
-//  cinder::gl::pushModelMatrix();
-//  cinder::gl::translate(player_.GetX(), player_.GetY());
-//  cinder::Rectf drawRect(-40, -40, 40, 40);
-//
-//  cinder::gl::draw(ship_texture_, drawRect);
-//  cinder::gl::popModelMatrix();
-//}
-
 void Engine::AddAlien() {
   for (size_t x = 0; x < 10; x++) {
     for (size_t y = 1; y < 5; y++) {
@@ -133,6 +120,19 @@ void Engine::AddShield() {
     mylibrary::Shield shield = mylibrary::Shield(mWorld_, 200, y * 150 + 200);
     mShields_.push_back(shield.GetBody());
   }
+}
+
+const std::vector<b2Body*>& Engine::GetBullets() const { return mBullets_; }
+
+const std::vector<b2Body*>& Engine::GetAliens() const { return mAliens_; }
+
+const std::vector<b2Body*>& Engine::GetFirstRow() const { return first_row_; }
+
+const std::vector<b2Body*>& Engine::GetShields() const { return mShields_; }
+
+const void Engine::RemoveBullet(b2Body* bullet) {
+  mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), bullet),
+                  mBullets_.end());
 }
 
 }  // namespace mylibrary

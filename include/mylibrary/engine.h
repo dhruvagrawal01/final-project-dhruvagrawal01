@@ -26,24 +26,27 @@ enum class ResultantAction {
 class Engine {
  public:
   Engine(size_t width, size_t height);
-  b2World *mWorld_;
-
   ResultantAction Step();
   void Reset();
   void AddBullet(int x, int y, bool is_alien);
-  //  void AddShip();
   void AddAlien();
   void AddShield();
+  const std::vector<b2Body *> &GetBullets() const;
+  const std::vector<b2Body *> &GetAliens() const;
+  const std::vector<b2Body *> &GetFirstRow() const;
+  const std::vector<b2Body *> &GetShields() const;
+  const void RemoveBullet(b2Body *bullet);
+  b2World *mWorld_;
+
+ private:
+  const size_t width_;
+  const size_t height_;
   std::vector<b2Body *> mBullets_;
   std::vector<b2Body *> mAliens_;
   std::vector<b2Body *> first_row_;
   std::vector<b2Body *> mShields_;
 
- private:
   ResultantAction TakeAction(b2Contact *contact);
-
-  const size_t width_;
-  const size_t height_;
 };
 
 }  // namespace mylibrary

@@ -24,6 +24,11 @@ namespace myapp {
 using cinder::audio::SourceFileRef;
 using cinder::audio::VoiceRef;
 
+enum class GameState {
+  kPlaying,
+  kGameOver,
+};
+
 class MyApp : public cinder::app::App {
  public:
   MyApp();
@@ -67,7 +72,7 @@ class MyApp : public cinder::app::App {
   cinder::gl::Texture2dRef ship_texture_;
   cinder::gl::Texture2dRef alien_texture_;
   cinder::gl::Texture2dRef shield_texture_;
-  int gameState;
+  GameState state_;
   // Cinder SourFileRef object with the background music file
   SourceFileRef alien_killed;
   // Cinder SourceFileRef object with the munch noise file

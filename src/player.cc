@@ -32,10 +32,9 @@ void Player::SetBody(b2World* mWorld_) {
 
 b2Body* Player::GetBody() { return body; }
 
-int Player::GetX() { return x; }
-
-void Player::ChangeY(int toAdd) { y += toAdd; }
-
-int Player::GetY() { return y; }
+void Player::Reset() {
+  score = 0;
+  time = 0;
+}
 
 }  // namespace mylibrary

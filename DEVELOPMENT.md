@@ -31,3 +31,10 @@
    - Refactored code by adding Engine class to separate functionality
    - ~~Fix bug on respawning alien wave~~
    - Made player motion smoother by setting velocity
+- **5/3/20**
+   - Refactored code by adding Engine class to separate functionality
+   - ~~Fix bug on respawning alien wave~~
+   - Made player motion smoother by setting velocity
+   - ~~Make engine variables private~~
+- **5/4/20**
+   - Add tests for classes

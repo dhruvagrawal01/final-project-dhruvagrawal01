@@ -15,8 +15,6 @@ const char kDbPath[] = "finalproject.db";
 const char kNormalFont[] = "Arial";
 const size_t kLimit = 3;
 const float kRadius = 3;
-const int kGameOver = 0;
-const int kPlaying = 1;
 const char kAlienDead[] = "invaderkilled.wav";
 const char kPlayerDead[] = "explosion.wav";
 
@@ -32,15 +30,13 @@ MyApp::MyApp()
       player_killed{cinder::audio::load(cinder::app::loadAsset(kPlayerDead))},
       alien_killed_voice_{Voice::create(alien_killed)},
       player_killed_voice_{Voice::create(player_killed)},
-      engine_(getWindowWidth(), getWindowHeight()) {}
+      engine_(getWindowWidth(), getWindowHeight()),
+      state_{GameState::kPlaying} {}
 
 void MyApp::setup() {
   cinder::gl::enableDepthWrite();
   cinder::gl::enableDepthRead();
-  //  b2Vec2 gravity(0.0f, 0.0f);
-  //  mWorld_ = new b2World(gravity);
   player_.name = player_name_;
-  gameState = kPlaying;
   timer_.start();
   engine_.AddShield();
   cinder::Rand::randomize();
@@ -48,7 +44,7 @@ void MyApp::setup() {
 }
 
 void MyApp::update() {
-  if (gameState == kGameOver) {
+  if (state_ == GameState::kGameOver) {
     if (top_players_.empty()) {
       leaderboard_.AddScoreToLeaderBoard(player_);
       top_players_ = leaderboard_.RetrieveHighScores(kLimit);
@@ -66,7 +62,7 @@ void MyApp::update() {
     return;
   }
 
-  if (engine_.mAliens_.empty()) {
+  if (engine_.GetAliens().empty()) {
     engine_.AddAlien();
   }
 
@@ -74,11 +70,10 @@ void MyApp::update() {
   long double time_since_change =
       duration_cast<milliseconds>(time - last_time_).count() / 1000.0;
 
-  // Add time > some value?
-  if (timer_.getSeconds() > 2 && time_since_change >= 10.0 &&
-      !engine_.first_row_.empty()) {
-    int rand_body = cinder::Rand::randInt(0, engine_.first_row_.size());
-    b2Body* alien = engine_.first_row_.at(rand_body);
+  if (timer_.getSeconds() > 2.5 && time_since_change >= 3.0 &&
+      !engine_.GetFirstRow().empty()) {
+    int rand_body = cinder::Rand::randInt(0, engine_.GetFirstRow().size());
+    b2Body* alien = engine_.GetFirstRow().at(rand_body);
     engine_.AddBullet(alien->GetPosition().x - 25, alien->GetPosition().y,
                       true);
     last_time_ = time;
@@ -93,31 +88,23 @@ void MyApp::update() {
       alien_killed_voice_->start();
       player_.score += 25;
     } else if (action == mylibrary::ResultantAction::PlayerKilled) {
-      gameState = kGameOver;
+      state_ = GameState::kGameOver;
       player_.time = timer_.getSeconds();
       // stop timer?
       player_killed_voice_->setVolume(0.1);
       player_killed_voice_->start();
     }
-
-    // Taken from:
-    // https://www.iforce2d.net/b2dtut/
-    //    for (b2Contact* contact = engine_.mWorld_->GetContactList(); contact;
-    //         contact = contact->GetNext()) {
-    //      if (contact->IsTouching()) {
-    //        TakeAction(contact);
-    //      }  // do something with the contact
-    //    }
   }
 }
 
 void MyApp::draw() {
   cinder::gl::enableAlphaBlending();
-  if (gameState == kGameOver) {
+  if (state_ == GameState::kGameOver) {
     cinder::gl::clear(cinder::Color(1, 0, 0));
     DrawGameOver();
     return;
   }
+
   cinder::gl::clear();
   // cinder::gl::clear(cinder::Color(0.8, 1, 0.89));
 
@@ -161,24 +148,19 @@ void MyApp::keyDown(KeyEvent event) {
 }
 
 void MyApp::ResetGame() {
-  gameState = kPlaying;
+  state_ = GameState::kPlaying;
   top_players_.clear();
   player_scores_.clear();
-  // Needs to be stopped to replay music from beginning
-  //  mAliens_.clear();
-  //  mBullets_.clear();
-  //  mShields_.clear();
-  //  first_row_.clear();
+  player_.Reset();
   engine_.Reset();
+  player_.SetBody(engine_.mWorld_);
   timer_.start();
-  //  b2Vec2 gravity(0.0f, 0.0f);
-  //  mWorld_ = new b2World(gravity);
   engine_.AddShield();
   cinder::Rand::randomize();
 }
 
 void MyApp::DrawBullets() {
-  for (const auto& bullet : engine_.mBullets_) {
+  for (const auto& bullet : engine_.GetBullets()) {
     cinder::gl::color(1, 0, 0);
     cinder::gl::pushModelMatrix();
     cinder::gl::translate(bullet->GetPosition().x, bullet->GetPosition().y);
@@ -191,16 +173,18 @@ void MyApp::DrawBullets() {
     }
     if (bullet->GetPosition().x > getWindowWidth() ||
         bullet->GetPosition().x < 0) {
-      engine_.mBullets_.erase(std::remove(engine_.mBullets_.begin(),
-                                          engine_.mBullets_.end(), bullet),
-                              engine_.mBullets_.end());
+      //      engine_.GetBullets().erase(std::remove(engine_.GetBullets().begin(),
+      //                                          engine_.GetBullets().end(),
+      //                                          bullet),
+      //                              engine_.GetBullets().end());
+      engine_.RemoveBullet(bullet);
     }
     cinder::gl::popModelMatrix();
   }
 }
 
 void MyApp::DrawAliens() {
-  for (const auto& alien : engine_.mAliens_) {
+  for (const auto& alien : engine_.GetAliens()) {
     cinder::gl::color(1, 1, 1);
 
     cinder::gl::pushModelMatrix();
@@ -212,7 +196,7 @@ void MyApp::DrawAliens() {
 }
 
 void MyApp::DrawShields() {
-  for (const auto& shield : engine_.mShields_) {
+  for (const auto& shield : engine_.GetShields()) {
     cinder::gl::color(0, 1, 0);
 
     cinder::gl::pushModelMatrix();
@@ -223,34 +207,9 @@ void MyApp::DrawShields() {
   }
 }
 
-// void MyApp::AddBullet(int x, int y, bool is_alien) {
-//  // Taken from:
-//  // https://github.com/cinder/Cinder/tree/master/blocks/Box2D/
-//
-//  b2BodyDef bodyDef;
-//  bodyDef.type = b2_dynamicBody;
-//  bodyDef.position.Set(x, y);
-//
-//  b2Body* body = mWorld_->CreateBody(&bodyDef);
-//
-//  body->SetUserData((void*)is_alien);
-//
-//  b2CircleShape bullet;
-//  bullet.m_p.Set(3.0f, 3.0f);
-//  bullet.m_radius = kRadius;
-//
-//  b2FixtureDef fixtureDef;
-//  fixtureDef.shape = &bullet;
-//  fixtureDef.density = 1.0f;
-//
-//  body->CreateFixture(&fixtureDef);
-//  mBullets_.push_back(body);
-//}
-//
 void MyApp::AddShip() {
   cinder::gl::color(0.68, 0.68, 0.68);
   cinder::gl::pushModelMatrix();
-  //  cinder::gl::translate(player_.GetX(), player_.GetY());
   cinder::gl::translate(player_.GetBody()->GetPosition().x,
                         player_.GetBody()->GetPosition().y);
 
@@ -258,58 +217,6 @@ void MyApp::AddShip() {
 
   cinder::gl::draw(ship_texture_, drawRect);
   cinder::gl::popModelMatrix();
-}
-//
-// void MyApp::AddAlien() {
-//  for (size_t x = 0; x < 10; x++) {
-//    for (size_t y = 1; y < 5; y++) {
-//      // Change the loop conditions?
-//      mylibrary::Alien alien =
-//          mylibrary::Alien(mWorld_, getWindowWidth() - 70 * y, x * 70 + 100);
-//      if (y == 4) {
-//        first_row_.push_back(alien.GetBody());
-//      }
-//      mAliens_.push_back(alien.GetBody());
-//    }
-//  }
-//}
-// void MyApp::d() {
-//  for (int y = 0; y < 4; y++) {
-//    mylibrary::Shield shield = mylibrary::Shield(mWorld_, 200, y * 150 + 200);
-//    mShields_.push_back(shield.GetBody());
-//  }
-//}
-
-void MyApp::TakeAction(b2Contact* contact) {
-  //  b2Body* b1 = contact->GetFixtureA()->GetBody();
-  //  b2Body* b2 = contact->GetFixtureB()->GetBody();
-  //
-  //  if (b1->GetUserData() == "alien" && !b2->GetUserData()) {
-  //    mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), b2),
-  //                    mBullets_.end());
-  //    mAliens_.erase(std::remove(mAliens_.begin(), mAliens_.end(), b1),
-  //                   mAliens_.end());
-  //    first_row_.erase(std::remove(first_row_.begin(), first_row_.end(), b1),
-  //                     first_row_.end());
-  //    mWorld_->DestroyBody(b1);
-  //    mWorld_->DestroyBody(b2);
-  //    alien_killed_voice_->setVolume(0.2);
-  //    alien_killed_voice_->start();
-  //    player_.score += 25;
-  //  } else if (b1->GetUserData() == "player" && b2->GetUserData()) {
-  //    gameState = kGameOver;
-  //    player_.time = timer_.getSeconds();
-  //    // stop timer?
-  //    player_killed_voice_->start();
-  //  } else if (b1->GetUserData() == "shield") {
-  //    mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), b2),
-  //                    mBullets_.end());
-  //    mShields_.erase(std::remove(mShields_.begin(), mShields_.end(), b1),
-  //                    mShields_.end());
-  //    mWorld_->DestroyBody(b1);
-  //    mWorld_->DestroyBody(b2);
-  //  }
-  // Check if both bullets collide
 }
 
 template <typename C>
@@ -331,6 +238,7 @@ void PrintText(const std::string& text, const C& color,
   const auto texture = cinder::gl::Texture::create(surface);
   cinder::gl::draw(texture, locp);
 }
+
 void MyApp::DrawGameOver() {
   // Lazily print.
   if (top_players_.empty()) return;
