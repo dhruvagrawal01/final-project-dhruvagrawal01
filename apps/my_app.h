@@ -27,6 +27,7 @@ using cinder::audio::VoiceRef;
 enum class GameState {
   kPlaying,
   kGameOver,
+  kMenu
 };
 
 class MyApp : public cinder::app::App {
@@ -46,10 +47,13 @@ class MyApp : public cinder::app::App {
   //  void AddAlien();
   //  void AddShield();
   void DrawGameOver();
+  void DrawWave() const;
+  void DrawMenu();
   void DrawBullets();
   void DrawAliens();
   void DrawShields();
   void ResetGame();
+  bool CrossBoundary();
 
   void TakeAction(b2Contact *contact);
   // Reset game?
@@ -72,7 +76,10 @@ class MyApp : public cinder::app::App {
   cinder::gl::Texture2dRef ship_texture_;
   cinder::gl::Texture2dRef alien_texture_;
   cinder::gl::Texture2dRef shield_texture_;
+  cinder::gl::Texture2dRef bg_texture_;
+  cinder::gl::Texture2dRef welcome_texture_;
   GameState state_;
+  SourceFileRef bg_music;
   // Cinder SourFileRef object with the background music file
   SourceFileRef alien_killed;
   // Cinder SourceFileRef object with the munch noise file
@@ -81,8 +88,10 @@ class MyApp : public cinder::app::App {
   VoiceRef alien_killed_voice_;
   // Cinder VoiceRef object with the munch noise file
   VoiceRef player_killed_voice_;
+  VoiceRef bg_music_voice_;
   // Cinder Timer object to keep track of the time elapsed
   mylibrary::Engine engine_;
+  int count_wave_ = 0;
 };
 
 }  // namespace myapp

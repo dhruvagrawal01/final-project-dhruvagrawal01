@@ -28,6 +28,7 @@ layout.
 | `Up`      | Move up                   |
 | `Down`    | Move down                 |
 | `SPACE`   | Shoot                     |
+| `r`       | Reset Game                     |
 
 
 **Author**: Dhruv Agrawal - [`dhruva4@illinois.edu`](mailto:dhruva4@illinois.edu)

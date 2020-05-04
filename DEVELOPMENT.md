@@ -37,4 +37,7 @@
    - Made player motion smoother by setting velocity
    - ~~Make engine variables private~~
 - **5/4/20**
-   - Add tests for classes
+   - Added tests for classes
+   - Added background music and image
+   - Added an alien wave counter and increased player speed with subsequent wave
+   - Added a game welcome menu

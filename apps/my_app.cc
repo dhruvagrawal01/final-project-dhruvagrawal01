@@ -15,6 +15,7 @@ const char kDbPath[] = "finalproject.db";
 const char kNormalFont[] = "Arial";
 const size_t kLimit = 3;
 const float kRadius = 3;
+const char kBGMusic[] = "bgmusic.mp3";
 const char kAlienDead[] = "invaderkilled.wav";
 const char kPlayerDead[] = "explosion.wav";
 
@@ -26,21 +27,26 @@ MyApp::MyApp()
       ship_texture_{Texture2d::create(loadImage(loadAsset("ship.png")))},
       alien_texture_{Texture2d::create(loadImage(loadAsset("alien.png")))},
       shield_texture_{Texture2d::create(loadImage(loadAsset("shield.png")))},
+      bg_texture_{Texture2d::create(loadImage(loadAsset("space.jpg")))},
+      welcome_texture_{Texture2d::create(loadImage(loadAsset("welcome.jpg")))},
+      bg_music{cinder::audio::load(cinder::app::loadAsset(kBGMusic))},
       alien_killed{cinder::audio::load(cinder::app::loadAsset(kAlienDead))},
       player_killed{cinder::audio::load(cinder::app::loadAsset(kPlayerDead))},
+      bg_music_voice_{Voice::create(bg_music)},
       alien_killed_voice_{Voice::create(alien_killed)},
       player_killed_voice_{Voice::create(player_killed)},
       engine_(getWindowWidth(), getWindowHeight()),
-      state_{GameState::kPlaying} {}
+      state_{GameState::kMenu} {}
 
 void MyApp::setup() {
-  cinder::gl::enableDepthWrite();
-  cinder::gl::enableDepthRead();
+  //  cinder::gl::enableDepthWrite();
+  //  cinder::gl::enableDepthRead();
   player_.name = player_name_;
-  timer_.start();
   engine_.AddShield();
   cinder::Rand::randomize();
   player_.SetBody(engine_.mWorld_);
+  //  bg_music_voice_->setVolume(10);
+  bg_music_voice_->start();
 }
 
 void MyApp::update() {
@@ -59,18 +65,28 @@ void MyApp::update() {
       // It is crucial the this vector be populated, given that `kLimit` > 0.
       assert(!player_scores_.empty());
     }
+    bg_music_voice_->stop();
+    return;
+  }
+
+  if (!bg_music_voice_->isPlaying()) {
+    bg_music_voice_->start();
+  }
+
+  if (state_ == GameState::kMenu) {
     return;
   }
 
   if (engine_.GetAliens().empty()) {
     engine_.AddAlien();
+    count_wave_++;
   }
 
   const auto time = system_clock::now();
   long double time_since_change =
       duration_cast<milliseconds>(time - last_time_).count() / 1000.0;
 
-  if (timer_.getSeconds() > 2.5 && time_since_change >= 3.0 &&
+  if (timer_.getSeconds() > 2.5 && time_since_change >= 2.5 &&
       !engine_.GetFirstRow().empty()) {
     int rand_body = cinder::Rand::randInt(0, engine_.GetFirstRow().size());
     b2Body* alien = engine_.GetFirstRow().at(rand_body);
@@ -87,7 +103,8 @@ void MyApp::update() {
       alien_killed_voice_->setVolume(0.1);
       alien_killed_voice_->start();
       player_.score += 25;
-    } else if (action == mylibrary::ResultantAction::PlayerKilled) {
+    } else if (action == mylibrary::ResultantAction::PlayerKilled ||
+               CrossBoundary()) {
       state_ = GameState::kGameOver;
       player_.time = timer_.getSeconds();
       // stop timer?
@@ -107,9 +124,17 @@ void MyApp::draw() {
 
   cinder::gl::clear();
   // cinder::gl::clear(cinder::Color(0.8, 1, 0.89));
+  cinder::gl::color(0.7, 0.7, 1);
+  cinder::gl::draw(bg_texture_);
+
+  if (state_ == GameState::kMenu) {
+    DrawMenu();
+    return;
+  }
 
   DrawMyScore();
   DrawTime();
+  DrawWave();
 
   AddShip();
 
@@ -121,17 +146,11 @@ void MyApp::draw() {
 void MyApp::keyDown(KeyEvent event) {
   switch (event.getCode()) {
     case KeyEvent::KEY_UP: {
-      if (player_.GetBody()->GetPosition().y - 40 >= 0) {
-        // player_.ChangeY(-10);
-        player_.GetBody()->SetLinearVelocity({0, -5.0f});
-      }
+      player_.GetBody()->SetLinearVelocity({0, -5.0f * count_wave_});
       break;
     }
     case KeyEvent::KEY_DOWN: {
-      if (player_.GetBody()->GetPosition().y <= getWindowHeight()) {
-        // player_.ChangeY(10);
-        player_.GetBody()->SetLinearVelocity({0, 5.0f});
-      }
+      player_.GetBody()->SetLinearVelocity({0, 5.0f * count_wave_});
       break;
     }
     case KeyEvent::KEY_SPACE: {
@@ -144,6 +163,11 @@ void MyApp::keyDown(KeyEvent event) {
       ResetGame();
       break;
     }
+    case KeyEvent::KEY_RETURN: {
+      state_ = GameState::kPlaying;
+      timer_.start();
+      break;
+    }
   }
 }
 
@@ -154,8 +178,12 @@ void MyApp::ResetGame() {
   player_.Reset();
   engine_.Reset();
   player_.SetBody(engine_.mWorld_);
+  // Needs to be stopped to replay music from beginning
+  bg_music_voice_->stop();
+  bg_music_voice_->start();
   timer_.start();
   engine_.AddShield();
+  count_wave_ = 0;
   cinder::Rand::randomize();
 }
 
@@ -267,11 +295,40 @@ void MyApp::DrawGameOver() {
   }
 }
 
+void MyApp::DrawMenu() {
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {550, 500};
+  cinder::Color color = {1, 1, 0};
+
+  std::stringstream ss;
+  ss << player_name_ << ", welcome to Space Impact!\n\n";
+  PrintText(ss.str(), color, size, {center.x, center.y - 50});
+  ss.clear();
+  ss.str(std::string());
+  color = cinder::Color::white();
+  ss << "Instructions:\n";
+  ss << "Avoid the aliens' bullets\n";
+  ss << "Don't go past the screen bounds\n";
+  ss << "Press ENTER to start!\n\n";
+  ss << "Controls:\n";
+  ss << "UP, DOWN : Move\n";
+  ss << "SPACE : Shoot\n";
+  ss << "r : Reset\n";
+  PrintText(ss.str(), color, size, {center.x, center.y});
+
+  cinder::gl::color(0, 1, 0);
+  cinder::gl::pushModelMatrix();
+  cinder::gl::translate({getWindowCenter().x, getWindowCenter().y + 225});
+  cinder::Rectf drawRect(-200, -80, 200, 80);
+  cinder::gl::draw(welcome_texture_, drawRect);
+  cinder::gl::popModelMatrix();
+}
+
 void MyApp::DrawMyScore() const {
   const std::string text = "Score: " + std::to_string(player_.score);
   const cinder::Color color = {1, 1, 0};
-  const cinder::ivec2 size = {150, 50};
-  const cinder::vec2 loc = {675, 50};
+  const cinder::ivec2 size = {200, 50};
+  const cinder::vec2 loc = {650, 50};
 
   PrintText(text, color, size, loc);
 }
@@ -279,10 +336,24 @@ void MyApp::DrawMyScore() const {
 void MyApp::DrawTime() const {
   const std::string text = "Time: " + std::to_string(timer_.getSeconds());
   const cinder::Color color = {1, 1, 0};
-  const cinder::ivec2 size = {225, 50};
-  const cinder::vec2 loc = {430, 50};
+  const cinder::ivec2 size = {275, 50};
+  const cinder::vec2 loc = {400, 50};
 
   PrintText(text, color, size, loc);
+}
+
+void MyApp::DrawWave() const {
+  const std::string text = "Wave: " + std::to_string(count_wave_);
+  const cinder::Color color = {1, 1, 0};
+  const cinder::ivec2 size = {150, 50};
+  const cinder::vec2 loc = {125, 50};
+
+  PrintText(text, color, size, loc);
+}
+
+bool MyApp::CrossBoundary() {
+  return player_.GetBody()->GetPosition().y <= 0 ||
+         player_.GetBody()->GetPosition().y >= getWindowHeight();
 }
 
 }  // namespace myapp
