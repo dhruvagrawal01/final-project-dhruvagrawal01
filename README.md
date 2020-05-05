@@ -6,7 +6,7 @@
 Read [this document](https://cliutils.gitlab.io/modern-cmake/chapters/basics/structure.html) to understand the project
 layout.
 
-![](https://imgur.com/RN3SoBz)
+![](https://imgur.com/RN3SoBz.gif)
 
 ## Dependencies and Libraries
 
