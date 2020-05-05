@@ -16,6 +16,9 @@
 
 namespace spaceimpact {
 
+/**
+ * Enum to represent the resulting action of a collision
+ */
 enum class ResultantAction {
   AlienKilled,
   PlayerKilled,
@@ -25,13 +28,48 @@ enum class ResultantAction {
 
 class Engine {
  public:
+  /**
+   * Constructor to create an Engine object
+   * @param width The game window's width
+   * @param height The game window's height
+   */
   Engine(size_t width, size_t height);
+
+  /**
+   * Advances the engine's state by determining collisions
+   * @return The action to take based on a collision
+   */
   ResultantAction Step();
+
+  /**
+   * Adds bullets as pointers to b2Bodys
+   * @param x The x-coordinate to add the bullet to
+   * @param y The y-coordinate to add the bullet to
+   * @param is_alien Whether the bullet is shot by an alien or the player
+   */
   void AddBullet(int x, int y, bool is_alien);
+
+  /**
+   * Adds all aliens as pointers to b2Bodys
+   */
   void AddAlien();
+
+  /**
+   * Adds all shields as pointers to b2Bodys
+   */
   void AddShield();
+
+  /**
+   * Removes a bullet from the vector of bullets
+   * @param bullet A pointer to the b2Body of the bullet to be removed
+   */
   void RemoveBullet(b2Body *bullet);
+
+  /**
+   * Resets the state of the engine by reinitializing variables
+   */
   void Reset();
+
   b2World *GetWorld() const;
   const std::vector<b2Body *> &GetBullets() const;
   const std::vector<b2Body *> &GetAliens() const;
@@ -46,9 +84,15 @@ class Engine {
  private:
   std::vector<b2Body *> mBullets_;
   std::vector<b2Body *> mAliens_;
+  // The first row of aliens (which shoot bullets back)
   std::vector<b2Body *> first_row_;
   std::vector<b2Body *> mShields_;
 
+  /**
+   * Takes the appropriate action based on the collision
+   * @param contact Pointer to b2Contact between bodies
+   * @return The resulting action to take
+   */
   ResultantAction TakeAction(b2Contact *contact);
 };
 

@@ -44,3 +44,5 @@
 - **5/5/20**
    - Refactored code by renaming variables in accordance with Google style guide
    - Added constants to avoid magic numbers
+- **5/6/20**
+   - Added comments

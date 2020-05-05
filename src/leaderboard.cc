@@ -14,8 +14,6 @@ namespace spaceimpact {
 using std::string;
 using std::vector;
 
-// See examples: https://github.com/SqliteModernCpp/sqlite_modern_cpp/tree/dev
-
 LeaderBoard::LeaderBoard(const string& db_path) : db_{db_path} {
   db_ << "CREATE TABLE if not exists leaderboard (\n"
          "  name  TEXT NOT NULL,\n"

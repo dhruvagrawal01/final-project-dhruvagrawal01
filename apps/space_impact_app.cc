@@ -1,4 +1,4 @@
-// Copyright (c) 2020 [Your Name]. All rights reserved.
+// Copyright (c) 2020 [Dhruv Agrawal]. All rights reserved.
 
 #include "space_impact_app.h"
 
@@ -16,9 +16,14 @@ const char kNormalFont[] = "Arial";
 const char kBGMusic[] = "bgmusic.mp3";
 const char kAlienDead[] = "invaderkilled.wav";
 const char kPlayerDead[] = "explosion.wav";
+const char kBGImage[] = "space.jpg";
+const char kMenuImage[] = "welcome.jpg";
+const char kShipImage[] = "ship.png";
+const char kAlienImage[] = "alien.png";
+const char kShieldImage[] = "shield.png";
 const size_t kLimit = 3;
 const float kRadius = 3.0f;
-const double kShootRate = 2.5;
+const double kShootRate = 2;
 const int kScoreIncrement = 25;
 const float kStartSpeed = 5.0f;
 const float kBulletSpeed = 40.0f;
@@ -35,29 +40,26 @@ SpaceImpactApp::SpaceImpactApp()
       state_{GameState::kMenu} {}
 
 void SpaceImpactApp::setup() {
+  cinder::Rand::randomize();
   SetupUtils();
   player_.name_ = player_name_;
-  engine_.AddShield();
-  cinder::Rand::randomize();
   player_.SetBody(engine_.GetWorld());
-  //  bg_music_voice_->setVolume(10);
+  engine_.AddShield();
+  bg_music_->setVolume(10);
   bg_music_->start();
 }
 
 void SpaceImpactApp::update() {
   if (state_ == GameState::kGameOver) {
+    // To populate the vector containing the overall high scores
     if (top_players_.empty()) {
       leaderboard_.AddScoreToLeaderBoard(player_);
       top_players_ = leaderboard_.RetrieveHighScores(kLimit);
-
-      // It is crucial the this vector be populated, given that `kLimit` > 0.
       assert(!top_players_.empty());
     }
     // To populate the vector containing the high scores of current player
     if (player_scores_.empty()) {
       player_scores_ = leaderboard_.RetrieveHighScores(player_, kLimit);
-
-      // It is crucial the this vector be populated, given that `kLimit` > 0.
       assert(!player_scores_.empty());
     }
     bg_music_->stop();
@@ -72,6 +74,7 @@ void SpaceImpactApp::update() {
     return;
   }
 
+  // To add a new wave of aliens once an entire wave is killed
   if (engine_.GetAliens().empty()) {
     engine_.AddAlien();
     num_wave_++;
@@ -81,10 +84,11 @@ void SpaceImpactApp::update() {
   long double time_since_change =
       duration_cast<milliseconds>(time - last_time_).count() / 1000.0;
 
+  // To make a random alien in the first row shoot every kShootRate seconds
   if (timer_.getSeconds() > kShootRate && time_since_change >= kShootRate &&
       !engine_.GetFirstRow().empty()) {
-    int rand_body = cinder::Rand::randInt(0, engine_.GetFirstRow().size());
-    b2Body* alien = engine_.GetFirstRow().at(rand_body);
+    int rand_alien = cinder::Rand::randInt(0, engine_.GetFirstRow().size());
+    b2Body* alien = engine_.GetFirstRow().at(rand_alien);
     engine_.AddBullet(alien->GetPosition().x - kAlienSize,
                       alien->GetPosition().y, true);
     last_time_ = time;
@@ -92,18 +96,18 @@ void SpaceImpactApp::update() {
 
   for (int i = 0; i < 10; ++i) {
     engine_.GetWorld()->Step(1 / 30.0f, 10, 10);
-
     spaceimpact::ResultantAction action = engine_.Step();
+
     if (action == spaceimpact::ResultantAction::AlienKilled) {
-      alien_shot_->setVolume(0.1);
+      alien_shot_->setVolume(0.5);
       alien_shot_->start();
       player_.score_ += kScoreIncrement;
     } else if (action == spaceimpact::ResultantAction::PlayerKilled ||
                CrossesBoundary()) {
       state_ = GameState::kGameOver;
+      timer_.stop();
       player_.time_ = timer_.getSeconds();
-      // stop timer?
-      player_shot_->setVolume(0.1);
+      player_shot_->setVolume(0.5);
       player_shot_->start();
     }
   }
@@ -130,7 +134,7 @@ void SpaceImpactApp::draw() {
   DrawTime();
   DrawWave();
 
-  AddPlayer();
+  DrawPlayer();
   DrawBullets();
   DrawAliens();
   DrawShields();
@@ -139,15 +143,18 @@ void SpaceImpactApp::draw() {
 void SpaceImpactApp::keyDown(KeyEvent event) {
   switch (event.getCode()) {
     case KeyEvent::KEY_UP: {
+      // Sets upward velocity according to the alien wave count
       player_.GetBody()->SetLinearVelocity({0, -kStartSpeed * num_wave_});
       break;
     }
     case KeyEvent::KEY_DOWN: {
+      // Sets downward velocity according to the alien wave count
       player_.GetBody()->SetLinearVelocity({0, kStartSpeed * num_wave_});
       break;
     }
     case KeyEvent::KEY_SPACE: {
       if (state_ == GameState::kPlaying) {
+        // Adds a bullet originating from the player
         engine_.AddBullet(player_.GetBody()->GetPosition().x + kShipSize,
                           player_.GetBody()->GetPosition().y, false);
       }
@@ -158,8 +165,10 @@ void SpaceImpactApp::keyDown(KeyEvent event) {
       break;
     }
     case KeyEvent::KEY_RETURN: {
-      state_ = GameState::kPlaying;
-      timer_.start();
+      if (state_ == GameState::kMenu) {
+        state_ = GameState::kPlaying;
+        timer_.start();
+      }
       break;
     }
   }
@@ -178,15 +187,14 @@ void SpaceImpactApp::ResetGame() {
   timer_.start();
   engine_.AddShield();
   num_wave_ = 0;
-  cinder::Rand::randomize();
 }
 
 void SpaceImpactApp::SetupUtils() {
-  bg_image_ = Texture2d::create(loadImage(loadAsset("space.jpg")));
-  menu_image_ = Texture2d::create(loadImage(loadAsset("welcome.jpg")));
-  ship_image_ = Texture2d::create(loadImage(loadAsset("ship.png")));
-  alien_image_ = Texture2d::create(loadImage(loadAsset("alien.png")));
-  shield_image_ = Texture2d::create(loadImage(loadAsset("shield.png")));
+  bg_image_ = Texture2d::create(loadImage(loadAsset(kBGImage)));
+  menu_image_ = Texture2d::create(loadImage(loadAsset(kMenuImage)));
+  ship_image_ = Texture2d::create(loadImage(loadAsset(kShipImage)));
+  alien_image_ = Texture2d::create(loadImage(loadAsset(kAlienImage)));
+  shield_image_ = Texture2d::create(loadImage(loadAsset(kShieldImage)));
 
   SourceFileRef bg_music_file =
       cinder::audio::load(cinder::app::loadAsset(kBGMusic));
@@ -209,11 +217,14 @@ void SpaceImpactApp::DrawBullets() {
     cinder::gl::drawSolidCircle(cinder::vec2(0, 0), kRadius);
 
     if (bullet->GetUserData()) {
+      // Bullet is shot by an alien
       bullet->SetLinearVelocity(b2Vec2(-kBulletSpeed, 0.0f));
     } else {
+      // Bullet is shot by the player
       bullet->SetLinearVelocity(b2Vec2(kBulletSpeed, 0.0f));
     }
 
+    // To avoid drawing a bullet once it crosses the screen bounds
     if (bullet->GetPosition().x > getWindowWidth() ||
         bullet->GetPosition().x < 0) {
       engine_.RemoveBullet(bullet);
@@ -247,7 +258,7 @@ void SpaceImpactApp::DrawShields() const {
   }
 }
 
-void SpaceImpactApp::AddPlayer() {
+void SpaceImpactApp::DrawPlayer() const {
   cinder::gl::color(0.68, 0.68, 0.68);
   cinder::gl::pushModelMatrix();
   cinder::gl::translate(player_.GetBody()->GetPosition().x,
@@ -280,7 +291,6 @@ void PrintText(const std::string& text, const C& color,
 }
 
 void SpaceImpactApp::DrawGameOver() {
-  // Lazily print.
   if (top_players_.empty()) return;
   if (player_scores_.empty()) return;
 
@@ -289,7 +299,8 @@ void SpaceImpactApp::DrawGameOver() {
   const cinder::Color color = cinder::Color::black();
 
   size_t row = 0;
-  PrintText("Game Over :(", color, size, center);
+  PrintText("Oops, you died :(", color, size, center);
+
   for (const spaceimpact::Player& player : top_players_) {
     std::stringstream ss;
     ss << player.name_ << " - " << player.score_;

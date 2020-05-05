@@ -11,11 +11,14 @@ const int kShieldSize = 25;
 Shield::Shield(b2World* mWorld_, size_t x, size_t y) {
   this->x_ = x;
   this->y_ = y;
+
   b2BodyDef bodyDef;
+  // Set up as a static body because it is stationary
   bodyDef.type = b2_staticBody;
   bodyDef.position.Set(x, y);
-
   body_ = mWorld_->CreateBody(&bodyDef);
+
+  // Used to identify the object type during collisions
   body_->SetUserData((void*)"shield");
 
   b2PolygonShape shield;
@@ -24,7 +27,6 @@ Shield::Shield(b2World* mWorld_, size_t x, size_t y) {
   b2FixtureDef fixtureDef;
   fixtureDef.shape = &shield;
   fixtureDef.density = 1.0f;
-
   body_->CreateFixture(&fixtureDef);
 }
 

@@ -13,8 +13,11 @@
 namespace spaceimpact {
 
 class Alien {
+  // A pointer to the b2Body object of the alien
   b2Body* body_;
+  // The alien's x-coordinate
   size_t x_;
+  // The alien's y-coordinate
   size_t y_;
 
  public:

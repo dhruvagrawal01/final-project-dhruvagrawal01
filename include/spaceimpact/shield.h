@@ -13,8 +13,11 @@
 namespace spaceimpact {
 
 class Shield {
+  // A pointer to the b2Body object of the shield
   b2Body* body_;
+  // The player's x-coordinate
   size_t x_;
+  // The player's y-coordinate
   size_t y_;
 
  public:

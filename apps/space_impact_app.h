@@ -24,6 +24,9 @@ namespace spaceimpactapp {
 using cinder::audio::SourceFileRef;
 using cinder::audio::VoiceRef;
 
+/**
+ * Enum class representing the state of the game
+ */
 enum class GameState {
   kPlaying,
   kGameOver,
@@ -38,17 +41,65 @@ class SpaceImpactApp : public cinder::app::App {
   void draw() override;
   void keyDown(cinder::app::KeyEvent) override;
 
+  /**
+   * Resets all the game variables, starting a new game
+   */
   void ResetGame();
+
+  /**
+   * Initializes the audio files and textures used for images
+   */
   void SetupUtils();
-  void AddPlayer();
+
+  /**
+   * Draws the ship representing the player
+   */
+  void DrawPlayer() const;
+
+  /**
+   * Draws any bullets shot by the player or an alien
+   */
   void DrawBullets();
+
+  /**
+   * Draws the remaining number of aliens
+   */
   void DrawAliens() const;
+
+  /**
+   * Draws the remaining number of shields
+   */
   void DrawShields() const;
+
+  /**
+   * Draws a welcome menu displaying the controls and instructions
+   */
   void DrawMenu() const;
+
+  /**
+   * Displays the alien wave count
+   */
   void DrawWave() const;
+
+  /**
+   * Displays the time elapsed
+   */
   void DrawTime() const;
+
+  /**
+   * Displays a counter of the player's score
+   */
   void DrawScore() const;
+
+  /**
+   * Draws a game over screen once the player dies
+   */
   void DrawGameOver();
+
+  /**
+   * Checks whether the player passed the bounds of the game window
+   * @return whether the player crossed the bounds
+   */
   bool CrossesBoundary();
 
  private:
@@ -67,10 +118,10 @@ class SpaceImpactApp : public cinder::app::App {
   const std::string player_name_;
   cinder::Timer timer_;
   GameState state_;
-
   std::chrono::time_point<std::chrono::system_clock> last_time_;
   std::vector<spaceimpact::Player> top_players_;
   std::vector<spaceimpact::Player> player_scores_;
+  // The current alien wave's number
   int num_wave_ = 0;
 };
 

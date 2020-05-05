@@ -25,7 +25,7 @@ ResultantAction Engine::Step() {
        contact = contact->GetNext()) {
     if (contact->IsTouching()) {
       return TakeAction(contact);
-    }  // do something with the contact
+    }
   }
   return ResultantAction::RandomCollision;
 }
@@ -35,6 +35,7 @@ ResultantAction Engine::TakeAction(b2Contact* contact) {
   b2Body* b2 = contact->GetFixtureB()->GetBody();
 
   if (b1->GetUserData() == "alien" && !b2->GetUserData()) {
+    // Collision between an alien and the player's bullet
     mAliens_.erase(std::remove(mAliens_.begin(), mAliens_.end(), b1),
                    mAliens_.end());
     first_row_.erase(std::remove(first_row_.begin(), first_row_.end(), b1),
@@ -44,20 +45,19 @@ ResultantAction Engine::TakeAction(b2Contact* contact) {
     mWorld_->DestroyBody(b2);
     return ResultantAction::AlienKilled;
   } else if (b1->GetUserData() == "player" && b2->GetUserData()) {
+    // Collision between the player and an alien's bullet
     return ResultantAction::PlayerKilled;
   } else if (b1->GetUserData() == "shield") {
+    // Collision between a shield and any bullet
     mShields_.erase(std::remove(mShields_.begin(), mShields_.end(), b1),
                     mShields_.end());
     RemoveBullet(b2);
     mWorld_->DestroyBody(b1);
     mWorld_->DestroyBody(b2);
     return ResultantAction::ShieldLost;
-  } else if (b1->GetUserData() && !b2->GetUserData()) {
-    RemoveBullet(b1);
-    RemoveBullet(b2);
-    mWorld_->DestroyBody(b1);
-    mWorld_->DestroyBody(b2);
-  } else if (!b1->GetUserData() && b2->GetUserData()) {
+  } else if ((b1->GetUserData() && !b2->GetUserData()) ||
+             (!b1->GetUserData() && b2->GetUserData())) {
+    // Collision between an alien's bullet and the player's bullet
     RemoveBullet(b1);
     RemoveBullet(b2);
     mWorld_->DestroyBody(b1);
@@ -71,11 +71,14 @@ void Engine::AddBullet(int x, int y, bool is_alien) {
   // https://github.com/cinder/Cinder/tree/master/blocks/Box2D/
 
   b2BodyDef bodyDef;
+  // Set up as a dynamic body as it moves and may react to forces
   bodyDef.type = b2_dynamicBody;
   bodyDef.position.Set(x, y);
-
   b2Body* body = mWorld_->CreateBody(&bodyDef);
 
+  // Used to identify the object type during collisions
+  // Sets it as 'true' if an alien's bullet
+  // Sets it as 'false' if the player's bullet
   body->SetUserData((void*)is_alien);
 
   b2CircleShape bullet;
@@ -85,18 +88,18 @@ void Engine::AddBullet(int x, int y, bool is_alien) {
   b2FixtureDef fixtureDef;
   fixtureDef.shape = &bullet;
   fixtureDef.density = 1.0f;
-
   body->CreateFixture(&fixtureDef);
+
   mBullets_.push_back(body);
 }
 
 void Engine::AddAlien() {
   for (size_t x = 0; x < kNumAliensPerRow; x++) {
     for (size_t y = 0; y < kNumAlienRows; y++) {
-      // Change the loop conditions?
       spaceimpact::Alien alien = spaceimpact::Alien(
           mWorld_, width_ - kAlienGap * (y + 1), x * kAlienGap + 100);
-      if (y == 3) {
+      // Checks whether the alien is in the first row
+      if (y == kNumAlienRows - 1) {
         first_row_.push_back(alien.GetBody());
       }
       mAliens_.push_back(alien.GetBody());
