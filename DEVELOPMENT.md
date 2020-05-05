@@ -46,3 +46,5 @@
    - Added constants to avoid magic numbers
 - **5/6/20**
    - Added comments
+   - Added PROPOSAL.md
+   - Updated README.md

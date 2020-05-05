@@ -23,7 +23,7 @@ enum class ResultantAction {
   AlienKilled,
   PlayerKilled,
   ShieldLost,
-  RandomCollision
+  RandomCollision,
 };
 
 class Engine {

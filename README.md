@@ -6,7 +6,7 @@
 Read [this document](https://cliutils.gitlab.io/modern-cmake/chapters/basics/structure.html) to understand the project
 layout.
 
-![](https://i.imgur.com/NpmWOnV.png)
+![](https://imgur.com/RN3SoBz)
 
 ## Dependencies and Libraries
 
@@ -28,7 +28,13 @@ layout.
 | `Up`      | Move up                   |
 | `Down`    | Move down                 |
 | `SPACE`   | Shoot                     |
-| `r`       | Reset Game                     |
+| `r`       | Reset Game                |
+
+### Instructions
+
+- Shoot all aliens in a wave to spawn the next wave
+- Avoid the aliens' bullets
+- Don't go past the game window bounds
 
 
 **Author**: Dhruv Agrawal - [`dhruva4@illinois.edu`](mailto:dhruva4@illinois.edu)

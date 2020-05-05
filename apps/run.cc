@@ -36,7 +36,7 @@ void SetUp(App::Settings* settings) {
   ParseArgs(&args);
 
   settings->setWindowSize(kWidth, kHeight);
-  settings->setTitle("My CS 126 Application");
+  settings->setTitle("Space Impact");
 }
 
 }  // namespace spaceimpactapp

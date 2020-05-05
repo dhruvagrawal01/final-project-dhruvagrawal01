@@ -6,7 +6,7 @@
 
 namespace spaceimpact {
 
-const int kPlayerSize = 40;
+const int kPlayerSize = 30;
 
 void Player::SetBody(b2World* mWorld_) {
   b2BodyDef bodyDef;
