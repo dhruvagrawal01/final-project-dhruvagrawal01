@@ -41,3 +41,6 @@
    - Added background music and image
    - Added an alien wave counter and increased player speed with subsequent wave
    - Added a game welcome menu
+- **5/5/20**
+   - Refactored code by renaming variables in accordance with Google style guide
+   - Added constants to avoid magic numbers

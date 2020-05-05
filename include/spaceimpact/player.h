@@ -12,27 +12,27 @@
 
 #include <string>
 
-namespace mylibrary {
+namespace spaceimpact {
 
 class Player {
-  b2Body* body;
-  int x = 50;
-  int y = 450;
+  b2Body* body_;
+  int x_ = 50;
+  int y_ = 450;
 
  public:
-  Player() : name("Random"), score(0), time(0) {}
+  Player() : name_("Random"), score_(0), time_(0) {}
   Player(const std::string& name, size_t score, double time)
-      : name(name), score(score), time(time) {}
+      : name_(name), score_(score), time_(time) {}
 
-  std::string name;
-  size_t score;
-  double time;
+  std::string name_;
+  size_t score_;
+  double time_;
 
   void SetBody(b2World* mWorld_);
   b2Body* GetBody();
   void Reset();
 };
 
-}  // namespace mylibrary
+}  // namespace spaceimpact
 
 #endif  // FINALPROJECT_PLAYER_H

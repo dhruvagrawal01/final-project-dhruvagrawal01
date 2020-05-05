@@ -10,18 +10,18 @@
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Dynamics/b2World.h>
 
-namespace mylibrary {
+namespace spaceimpact {
 
 class Shield {
-  b2Body* body;
-  size_t x;
-  size_t y;
+  b2Body* body_;
+  size_t x_;
+  size_t y_;
 
  public:
   Shield(b2World* mWorld_, size_t x, size_t y);
   b2Body* GetBody();
 };
 
-}  // namespace mylibrary
+}  // namespace spaceimpact
 
 #endif  // FINALPROJECT_SHIELD_H

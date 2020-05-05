@@ -2,11 +2,16 @@
 // Created by Dhruv Agrawal on 5/3/20.
 //
 
-#include <mylibrary/engine.h>
+#include <spaceimpact/engine.h>
 
-namespace mylibrary {
+namespace spaceimpact {
 
-const float kRadius = 3;
+const float kRadius = 3.0f;
+const int kAlienGap = 70;
+const int kShieldGap = 200;
+const int kNumAliensPerRow = 10;
+const int kNumAlienRows = 4;
+const int kNumShields = 4;
 
 Engine::Engine(size_t width, size_t height) : width_{width}, height_{height} {
   b2Vec2 gravity(0.0f, 0.0f);
@@ -30,46 +35,35 @@ ResultantAction Engine::TakeAction(b2Contact* contact) {
   b2Body* b2 = contact->GetFixtureB()->GetBody();
 
   if (b1->GetUserData() == "alien" && !b2->GetUserData()) {
-    mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), b2),
-                    mBullets_.end());
     mAliens_.erase(std::remove(mAliens_.begin(), mAliens_.end(), b1),
                    mAliens_.end());
     first_row_.erase(std::remove(first_row_.begin(), first_row_.end(), b1),
                      first_row_.end());
+    RemoveBullet(b2);
     mWorld_->DestroyBody(b1);
     mWorld_->DestroyBody(b2);
     return ResultantAction::AlienKilled;
   } else if (b1->GetUserData() == "player" && b2->GetUserData()) {
     return ResultantAction::PlayerKilled;
   } else if (b1->GetUserData() == "shield") {
-    mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), b2),
-                    mBullets_.end());
     mShields_.erase(std::remove(mShields_.begin(), mShields_.end(), b1),
                     mShields_.end());
+    RemoveBullet(b2);
     mWorld_->DestroyBody(b1);
     mWorld_->DestroyBody(b2);
     return ResultantAction::ShieldLost;
   } else if (b1->GetUserData() && !b2->GetUserData()) {
-    mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), b1),
-                    mBullets_.end());
-    mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), b2),
-                    mBullets_.end());
+    RemoveBullet(b1);
+    RemoveBullet(b2);
+    mWorld_->DestroyBody(b1);
+    mWorld_->DestroyBody(b2);
   } else if (!b1->GetUserData() && b2->GetUserData()) {
-    mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), b1),
-                    mBullets_.end());
-    mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), b2),
-                    mBullets_.end());
+    RemoveBullet(b1);
+    RemoveBullet(b2);
+    mWorld_->DestroyBody(b1);
+    mWorld_->DestroyBody(b2);
   }
   return ResultantAction::RandomCollision;
-}
-
-void Engine::Reset() {
-  mAliens_.clear();
-  mBullets_.clear();
-  mShields_.clear();
-  first_row_.clear();
-  b2Vec2 gravity(0.0f, 0.0f);
-  mWorld_ = new b2World(gravity);
 }
 
 void Engine::AddBullet(int x, int y, bool is_alien) {
@@ -82,15 +76,10 @@ void Engine::AddBullet(int x, int y, bool is_alien) {
 
   b2Body* body = mWorld_->CreateBody(&bodyDef);
 
-  //  if (is_alien) {
-  //    body->SetUserData((void*)"alien_shot");
-  //  } else {
-  //    body->SetUserData((void*)"player_shot");
-  //  }
   body->SetUserData((void*)is_alien);
 
   b2CircleShape bullet;
-  bullet.m_p.Set(3.0f, 3.0f);
+  bullet.m_p.Set(kRadius, kRadius);
   bullet.m_radius = kRadius;
 
   b2FixtureDef fixtureDef;
@@ -102,12 +91,12 @@ void Engine::AddBullet(int x, int y, bool is_alien) {
 }
 
 void Engine::AddAlien() {
-  for (size_t x = 0; x < 10; x++) {
-    for (size_t y = 1; y < 5; y++) {
+  for (size_t x = 0; x < kNumAliensPerRow; x++) {
+    for (size_t y = 0; y < kNumAlienRows; y++) {
       // Change the loop conditions?
-      mylibrary::Alien alien =
-          mylibrary::Alien(mWorld_, width_ - 70 * y, x * 70 + 100);
-      if (y == 4) {
+      spaceimpact::Alien alien = spaceimpact::Alien(
+          mWorld_, width_ - kAlienGap * (y + 1), x * kAlienGap + 100);
+      if (y == 3) {
         first_row_.push_back(alien.GetBody());
       }
       mAliens_.push_back(alien.GetBody());
@@ -116,11 +105,28 @@ void Engine::AddAlien() {
 }
 
 void Engine::AddShield() {
-  for (int y = 0; y < 4; y++) {
-    mylibrary::Shield shield = mylibrary::Shield(mWorld_, 200, y * 150 + 200);
+  for (int y = 0; y < kNumShields; y++) {
+    spaceimpact::Shield shield =
+        spaceimpact::Shield(mWorld_, kShieldGap, y * 150 + kShieldGap);
     mShields_.push_back(shield.GetBody());
   }
 }
+
+void Engine::RemoveBullet(b2Body* bullet) {
+  mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), bullet),
+                  mBullets_.end());
+}
+
+void Engine::Reset() {
+  mAliens_.clear();
+  mBullets_.clear();
+  mShields_.clear();
+  first_row_.clear();
+  b2Vec2 gravity(0.0f, 0.0f);
+  mWorld_ = new b2World(gravity);
+}
+
+b2World* Engine::GetWorld() const { return mWorld_; }
 
 const std::vector<b2Body*>& Engine::GetBullets() const { return mBullets_; }
 
@@ -130,9 +136,4 @@ const std::vector<b2Body*>& Engine::GetFirstRow() const { return first_row_; }
 
 const std::vector<b2Body*>& Engine::GetShields() const { return mShields_; }
 
-const void Engine::RemoveBullet(b2Body* bullet) {
-  mBullets_.erase(std::remove(mBullets_.begin(), mBullets_.end(), bullet),
-                  mBullets_.end());
-}
-
-}  // namespace mylibrary
+}  // namespace spaceimpact

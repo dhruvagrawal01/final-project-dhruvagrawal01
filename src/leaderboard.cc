@@ -2,15 +2,14 @@
 // Created by Dhruv Agrawal on 4/21/20.
 //
 
-
-#include <mylibrary/leaderboard.h>
-#include <mylibrary/player.h>
+#include <spaceimpact/leaderboard.h>
+#include <spaceimpact/player.h>
 #include <sqlite_modern_cpp.h>
 
 #include <string>
 #include <vector>
 
-namespace mylibrary {
+namespace spaceimpact {
 
 using std::string;
 using std::vector;
@@ -27,7 +26,7 @@ LeaderBoard::LeaderBoard(const string& db_path) : db_{db_path} {
 
 void LeaderBoard::AddScoreToLeaderBoard(const Player& player) {
   db_ << "insert into leaderboard (name,score,time) values (?,?,?);"
-      << player.name << player.score << player.time;
+      << player.name_ << player.score_ << player.time_;
 }
 
 vector<Player> GetPlayers(sqlite::database_binder* rows) {
@@ -57,8 +56,8 @@ vector<Player> LeaderBoard::RetrieveHighScores(const Player& player,
   auto rows =
       db_ << "select name,score from leaderboard where name = (?) order by "
              "score desc limit (?);"
-          << player.name << limit;
+          << player.name_ << limit;
   return GetPlayers(&rows);
 }
 
-}  // namespace mylibrary
+}  // namespace spaceimpact

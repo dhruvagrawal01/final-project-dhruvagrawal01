@@ -2,18 +2,16 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include <cinder/Rand.h>
-#include <mylibrary/alien.h>
-#include <mylibrary/engine.h>
-#include <mylibrary/example.h>
-#include <mylibrary/player.h>
+#include <spaceimpact/alien.h>
+#include <spaceimpact/engine.h>
+#include <spaceimpact/player.h>
 
 #include <catch2/catch.hpp>
 
 TEST_CASE("Player", "[Player]") {
   b2Vec2 gravity(0.0f, 0.0f);
   b2World* world = new b2World(gravity);
-  mylibrary::Player player;
+  spaceimpact::Player player;
   b2Vec2 position = {50, 450};
 
   SECTION("Testing SetBody") {
@@ -25,11 +23,11 @@ TEST_CASE("Player", "[Player]") {
   }
 
   SECTION("Testing Reset") {
-    player.time = 20;
-    player.score = 500;
+    player.time_ = 20;
+    player.score_ = 500;
     player.Reset();
-    REQUIRE(player.time == 0);
-    REQUIRE(player.score == 0);
+    REQUIRE(player.time_ == 0);
+    REQUIRE(player.score_ == 0);
   }
 }
 
@@ -37,7 +35,7 @@ TEST_CASE("Alien", "[Alien]") {
   b2Vec2 gravity(0.0f, 0.0f);
   b2World* world = new b2World(gravity);
   b2Vec2 position = {100, 100};
-  mylibrary::Alien alien = mylibrary::Alien(world, 100, 100);
+  spaceimpact::Alien alien = spaceimpact::Alien(world, 100, 100);
   b2Body* body = alien.GetBody();
   REQUIRE(body->GetType() == b2_staticBody);
   REQUIRE(body->GetUserData() == "alien");
@@ -48,7 +46,7 @@ TEST_CASE("Shield", "[Shield]") {
   b2Vec2 gravity(0.0f, 0.0f);
   b2World* world = new b2World(gravity);
   b2Vec2 position = {100, 100};
-  mylibrary::Shield shield = mylibrary::Shield(world, 100, 100);
+  spaceimpact::Shield shield = spaceimpact::Shield(world, 100, 100);
   b2Body* body = shield.GetBody();
   REQUIRE(body->GetType() == b2_staticBody);
   REQUIRE(body->GetUserData() == "shield");
@@ -56,8 +54,8 @@ TEST_CASE("Shield", "[Shield]") {
 }
 
 TEST_CASE("Engine", "[Engine]") {
-  mylibrary::Engine engine = mylibrary::Engine(800, 800);
-  b2World* world = engine.mWorld_;
+  spaceimpact::Engine engine = spaceimpact::Engine(800, 800);
+  b2World* world = engine.GetWorld();
 
   SECTION("Testing AddAlien") {
     engine.AddAlien();
@@ -111,7 +109,7 @@ TEST_CASE("Engine", "[Engine]") {
   }
 
   SECTION("Testing Step") {
-    REQUIRE(engine.Step() == mylibrary::ResultantAction::RandomCollision);
+    REQUIRE(engine.Step() == spaceimpact::ResultantAction::RandomCollision);
   }
 
   SECTION("Testing Reset") {

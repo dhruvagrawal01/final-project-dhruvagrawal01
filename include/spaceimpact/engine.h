@@ -9,12 +9,12 @@
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Dynamics/b2World.h>
-#include <mylibrary/alien.h>
-#include <mylibrary/shield.h>
+#include <spaceimpact/alien.h>
+#include <spaceimpact/shield.h>
 
 #include <vector>
 
-namespace mylibrary {
+namespace spaceimpact {
 
 enum class ResultantAction {
   AlienKilled,
@@ -27,20 +27,23 @@ class Engine {
  public:
   Engine(size_t width, size_t height);
   ResultantAction Step();
-  void Reset();
   void AddBullet(int x, int y, bool is_alien);
   void AddAlien();
   void AddShield();
+  void RemoveBullet(b2Body *bullet);
+  void Reset();
+  b2World *GetWorld() const;
   const std::vector<b2Body *> &GetBullets() const;
   const std::vector<b2Body *> &GetAliens() const;
   const std::vector<b2Body *> &GetFirstRow() const;
   const std::vector<b2Body *> &GetShields() const;
-  const void RemoveBullet(b2Body *bullet);
-  b2World *mWorld_;
 
  private:
   const size_t width_;
   const size_t height_;
+  b2World *mWorld_;
+
+ private:
   std::vector<b2Body *> mBullets_;
   std::vector<b2Body *> mAliens_;
   std::vector<b2Body *> first_row_;
@@ -49,6 +52,6 @@ class Engine {
   ResultantAction TakeAction(b2Contact *contact);
 };
 
-}  // namespace mylibrary
+}  // namespace spaceimpact
 
 #endif  // FINALPROJECT_ENGINE_H

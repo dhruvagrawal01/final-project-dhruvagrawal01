@@ -5,15 +5,15 @@
 #ifndef FINALPROJECT_LEADERBOARD_H
 #define FINALPROJECT_LEADERBOARD_H
 
-#include <mylibrary/leaderboard.h>
-#include "player.h"
-
+#include <spaceimpact/leaderboard.h>
 #include <sqlite_modern_cpp.h>
 
 #include <string>
 #include <vector>
 
-namespace mylibrary {
+#include "player.h"
+
+namespace spaceimpact {
 
 class LeaderBoard {
  public:
@@ -36,6 +36,6 @@ class LeaderBoard {
   sqlite::database db_;
 };
 
-}  // namespace mylibrary
+}  // namespace spaceimpact
 
 #endif  // FINALPROJECT_LEADERBOARD_H

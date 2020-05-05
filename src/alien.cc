@@ -2,32 +2,34 @@
 // Created by Dhruv Agrawal on 4/28/20.
 //
 
-#include <mylibrary/alien.h>
+#include <spaceimpact/alien.h>
 
-namespace mylibrary {
+namespace spaceimpact {
+
+const int kAlienSize = 20;
 
 Alien::Alien(b2World* mWorld_, size_t x, size_t y) {
-  this->x = x;
-  this->y = y;
+  this->x_ = x;
+  this->y_ = y;
 
   b2BodyDef bodyDef;
   bodyDef.type = b2_staticBody;
   bodyDef.position.Set(x, y);
 
-  body = mWorld_->CreateBody(&bodyDef);
+  body_ = mWorld_->CreateBody(&bodyDef);
 
-  body->SetUserData((void*)"alien");
+  body_->SetUserData((void*)"alien");
 
   b2PolygonShape alien;
-  alien.SetAsBox(20, 20);
+  alien.SetAsBox(kAlienSize, kAlienSize);
 
   b2FixtureDef fixtureDef;
   fixtureDef.shape = &alien;
   fixtureDef.density = 1.0f;
 
-  body->CreateFixture(&fixtureDef);
+  body_->CreateFixture(&fixtureDef);
 }
 
-b2Body* Alien::GetBody() { return body; }
+b2Body* Alien::GetBody() { return body_; }
 
-}  // namespace mylibrary
+}  // namespace spaceimpact

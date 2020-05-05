@@ -4,13 +4,12 @@
 #include <cinder/app/RendererGl.h>
 #include <gflags/gflags.h>
 
-#include "my_app.h"
-
+#include "space_impact_app.h"
 
 using cinder::app::App;
 using cinder::app::RendererGl;
 
-namespace myapp {
+namespace spaceimpactapp {
 
 DEFINE_string(name, "CS126SP20", "the name of the player");
 
@@ -40,10 +39,9 @@ void SetUp(App::Settings* settings) {
   settings->setTitle("My CS 126 Application");
 }
 
-}  // namespace myapp
-
+}  // namespace spaceimpactapp
 
 // This is a macro that runs the application.
-CINDER_APP(myapp::MyApp,
-           RendererGl(RendererGl::Options().msaa(myapp::kSamples)),
-           myapp::SetUp)
+CINDER_APP(spaceimpactapp::SpaceImpactApp,
+           RendererGl(RendererGl::Options().msaa(spaceimpactapp::kSamples)),
+           spaceimpactapp::SetUp)

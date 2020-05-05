@@ -2,9 +2,9 @@
 // Created by Dhruv Agrawal on 4/28/20.
 //
 
-#include <mylibrary/player.h>
+#include <spaceimpact/player.h>
 
-namespace mylibrary {
+namespace spaceimpact {
 
 void Player::SetBody(b2World* mWorld_) {
   b2BodyDef bodyDef;
@@ -12,12 +12,12 @@ void Player::SetBody(b2World* mWorld_) {
   //  bodyDef.type = b2_dynamicBody;
 
   // bodyDef.position.Set(location.Row(), location.Col());
-  bodyDef.position.Set(x, y);
+  bodyDef.position.Set(x_, y_);
 
-  body = mWorld_->CreateBody(&bodyDef);
+  body_ = mWorld_->CreateBody(&bodyDef);
 
   //  body->SetUserData((void*)"player");
-  body->SetUserData((void*)"player");
+  body_->SetUserData((void*)"player");
 
   b2PolygonShape dynamicBox;
   // 30,30? or change?
@@ -27,14 +27,14 @@ void Player::SetBody(b2World* mWorld_) {
   fixtureDef.shape = &dynamicBox;
   fixtureDef.density = 1.0f;
 
-  body->CreateFixture(&fixtureDef);
+  body_->CreateFixture(&fixtureDef);
 }
 
-b2Body* Player::GetBody() { return body; }
+b2Body* Player::GetBody() { return body_; }
 
 void Player::Reset() {
-  score = 0;
-  time = 0;
+  score_ = 0;
+  time_ = 0;
 }
 
-}  // namespace mylibrary
+}  // namespace spaceimpact

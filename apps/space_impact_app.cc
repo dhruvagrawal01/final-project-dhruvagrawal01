@@ -1,8 +1,8 @@
 // Copyright (c) 2020 [Your Name]. All rights reserved.
 
-#include "my_app.h"
+#include "space_impact_app.h"
 
-namespace myapp {
+namespace spaceimpactapp {
 
 using namespace std::chrono;
 
@@ -13,43 +13,38 @@ using std::chrono::system_clock;
 
 const char kDbPath[] = "finalproject.db";
 const char kNormalFont[] = "Arial";
-const size_t kLimit = 3;
-const float kRadius = 3;
 const char kBGMusic[] = "bgmusic.mp3";
 const char kAlienDead[] = "invaderkilled.wav";
 const char kPlayerDead[] = "explosion.wav";
+const size_t kLimit = 3;
+const float kRadius = 3.0f;
+const double kShootRate = 2.5;
+const int kScoreIncrement = 25;
+const float kStartSpeed = 5.0f;
+const float kBulletSpeed = 40.0f;
+const int kAlienSize = 20;
+const int kShieldSize = 25;
+const int kShipSize = 40;
 
 DECLARE_string(name);
 
-MyApp::MyApp()
+SpaceImpactApp::SpaceImpactApp()
     : player_name_{FLAGS_name},
       leaderboard_{cinder::app::getAssetPath(kDbPath).string()},
-      ship_texture_{Texture2d::create(loadImage(loadAsset("ship.png")))},
-      alien_texture_{Texture2d::create(loadImage(loadAsset("alien.png")))},
-      shield_texture_{Texture2d::create(loadImage(loadAsset("shield.png")))},
-      bg_texture_{Texture2d::create(loadImage(loadAsset("space.jpg")))},
-      welcome_texture_{Texture2d::create(loadImage(loadAsset("welcome.jpg")))},
-      bg_music{cinder::audio::load(cinder::app::loadAsset(kBGMusic))},
-      alien_killed{cinder::audio::load(cinder::app::loadAsset(kAlienDead))},
-      player_killed{cinder::audio::load(cinder::app::loadAsset(kPlayerDead))},
-      bg_music_voice_{Voice::create(bg_music)},
-      alien_killed_voice_{Voice::create(alien_killed)},
-      player_killed_voice_{Voice::create(player_killed)},
       engine_(getWindowWidth(), getWindowHeight()),
       state_{GameState::kMenu} {}
 
-void MyApp::setup() {
-  //  cinder::gl::enableDepthWrite();
-  //  cinder::gl::enableDepthRead();
-  player_.name = player_name_;
+void SpaceImpactApp::setup() {
+  SetupUtils();
+  player_.name_ = player_name_;
   engine_.AddShield();
   cinder::Rand::randomize();
-  player_.SetBody(engine_.mWorld_);
+  player_.SetBody(engine_.GetWorld());
   //  bg_music_voice_->setVolume(10);
-  bg_music_voice_->start();
+  bg_music_->start();
 }
 
-void MyApp::update() {
+void SpaceImpactApp::update() {
   if (state_ == GameState::kGameOver) {
     if (top_players_.empty()) {
       leaderboard_.AddScoreToLeaderBoard(player_);
@@ -65,12 +60,12 @@ void MyApp::update() {
       // It is crucial the this vector be populated, given that `kLimit` > 0.
       assert(!player_scores_.empty());
     }
-    bg_music_voice_->stop();
+    bg_music_->stop();
     return;
   }
 
-  if (!bg_music_voice_->isPlaying()) {
-    bg_music_voice_->start();
+  if (!bg_music_->isPlaying()) {
+    bg_music_->start();
   }
 
   if (state_ == GameState::kMenu) {
@@ -79,42 +74,42 @@ void MyApp::update() {
 
   if (engine_.GetAliens().empty()) {
     engine_.AddAlien();
-    count_wave_++;
+    num_wave_++;
   }
 
   const auto time = system_clock::now();
   long double time_since_change =
       duration_cast<milliseconds>(time - last_time_).count() / 1000.0;
 
-  if (timer_.getSeconds() > 2.5 && time_since_change >= 2.5 &&
+  if (timer_.getSeconds() > kShootRate && time_since_change >= kShootRate &&
       !engine_.GetFirstRow().empty()) {
     int rand_body = cinder::Rand::randInt(0, engine_.GetFirstRow().size());
     b2Body* alien = engine_.GetFirstRow().at(rand_body);
-    engine_.AddBullet(alien->GetPosition().x - 25, alien->GetPosition().y,
-                      true);
+    engine_.AddBullet(alien->GetPosition().x - kAlienSize,
+                      alien->GetPosition().y, true);
     last_time_ = time;
   }
 
   for (int i = 0; i < 10; ++i) {
-    engine_.mWorld_->Step(1 / 30.0f, 10, 10);
+    engine_.GetWorld()->Step(1 / 30.0f, 10, 10);
 
-    mylibrary::ResultantAction action = engine_.Step();
-    if (action == mylibrary::ResultantAction::AlienKilled) {
-      alien_killed_voice_->setVolume(0.1);
-      alien_killed_voice_->start();
-      player_.score += 25;
-    } else if (action == mylibrary::ResultantAction::PlayerKilled ||
-               CrossBoundary()) {
+    spaceimpact::ResultantAction action = engine_.Step();
+    if (action == spaceimpact::ResultantAction::AlienKilled) {
+      alien_shot_->setVolume(0.1);
+      alien_shot_->start();
+      player_.score_ += kScoreIncrement;
+    } else if (action == spaceimpact::ResultantAction::PlayerKilled ||
+               CrossesBoundary()) {
       state_ = GameState::kGameOver;
-      player_.time = timer_.getSeconds();
+      player_.time_ = timer_.getSeconds();
       // stop timer?
-      player_killed_voice_->setVolume(0.1);
-      player_killed_voice_->start();
+      player_shot_->setVolume(0.1);
+      player_shot_->start();
     }
   }
 }
 
-void MyApp::draw() {
+void SpaceImpactApp::draw() {
   cinder::gl::enableAlphaBlending();
   if (state_ == GameState::kGameOver) {
     cinder::gl::clear(cinder::Color(1, 0, 0));
@@ -123,40 +118,39 @@ void MyApp::draw() {
   }
 
   cinder::gl::clear();
-  // cinder::gl::clear(cinder::Color(0.8, 1, 0.89));
   cinder::gl::color(0.7, 0.7, 1);
-  cinder::gl::draw(bg_texture_);
+  cinder::gl::draw(bg_image_);
 
   if (state_ == GameState::kMenu) {
     DrawMenu();
     return;
   }
 
-  DrawMyScore();
+  DrawScore();
   DrawTime();
   DrawWave();
 
-  AddShip();
-
+  AddPlayer();
   DrawBullets();
   DrawAliens();
   DrawShields();
 }
 
-void MyApp::keyDown(KeyEvent event) {
+void SpaceImpactApp::keyDown(KeyEvent event) {
   switch (event.getCode()) {
     case KeyEvent::KEY_UP: {
-      player_.GetBody()->SetLinearVelocity({0, -5.0f * count_wave_});
+      player_.GetBody()->SetLinearVelocity({0, -kStartSpeed * num_wave_});
       break;
     }
     case KeyEvent::KEY_DOWN: {
-      player_.GetBody()->SetLinearVelocity({0, 5.0f * count_wave_});
+      player_.GetBody()->SetLinearVelocity({0, kStartSpeed * num_wave_});
       break;
     }
     case KeyEvent::KEY_SPACE: {
-      //      engine_.AddBullet(player_.GetX() + 40, player_.GetY(), false);
-      engine_.AddBullet(player_.GetBody()->GetPosition().x + 40,
-                        player_.GetBody()->GetPosition().y, false);
+      if (state_ == GameState::kPlaying) {
+        engine_.AddBullet(player_.GetBody()->GetPosition().x + kShipSize,
+                          player_.GetBody()->GetPosition().y, false);
+      }
       break;
     }
     case KeyEvent::KEY_r: {
@@ -171,23 +165,43 @@ void MyApp::keyDown(KeyEvent event) {
   }
 }
 
-void MyApp::ResetGame() {
+void SpaceImpactApp::ResetGame() {
   state_ = GameState::kPlaying;
   top_players_.clear();
   player_scores_.clear();
   player_.Reset();
   engine_.Reset();
-  player_.SetBody(engine_.mWorld_);
+  player_.SetBody(engine_.GetWorld());
   // Needs to be stopped to replay music from beginning
-  bg_music_voice_->stop();
-  bg_music_voice_->start();
+  bg_music_->stop();
+  bg_music_->start();
   timer_.start();
   engine_.AddShield();
-  count_wave_ = 0;
+  num_wave_ = 0;
   cinder::Rand::randomize();
 }
 
-void MyApp::DrawBullets() {
+void SpaceImpactApp::SetupUtils() {
+  bg_image_ = Texture2d::create(loadImage(loadAsset("space.jpg")));
+  menu_image_ = Texture2d::create(loadImage(loadAsset("welcome.jpg")));
+  ship_image_ = Texture2d::create(loadImage(loadAsset("ship.png")));
+  alien_image_ = Texture2d::create(loadImage(loadAsset("alien.png")));
+  shield_image_ = Texture2d::create(loadImage(loadAsset("shield.png")));
+
+  SourceFileRef bg_music_file =
+      cinder::audio::load(cinder::app::loadAsset(kBGMusic));
+  bg_music_ = Voice::create(bg_music_file);
+
+  SourceFileRef alien_shot_file =
+      cinder::audio::load(cinder::app::loadAsset(kAlienDead));
+  alien_shot_ = Voice::create(alien_shot_file);
+
+  SourceFileRef player_shot_file =
+      cinder::audio::load(cinder::app::loadAsset(kPlayerDead));
+  player_shot_ = Voice::create(player_shot_file);
+}
+
+void SpaceImpactApp::DrawBullets() {
   for (const auto& bullet : engine_.GetBullets()) {
     cinder::gl::color(1, 0, 0);
     cinder::gl::pushModelMatrix();
@@ -195,55 +209,53 @@ void MyApp::DrawBullets() {
     cinder::gl::drawSolidCircle(cinder::vec2(0, 0), kRadius);
 
     if (bullet->GetUserData()) {
-      bullet->SetLinearVelocity(b2Vec2(-40.0f, 0.0f));
+      bullet->SetLinearVelocity(b2Vec2(-kBulletSpeed, 0.0f));
     } else {
-      bullet->SetLinearVelocity(b2Vec2(40.0f, 0.0f));
+      bullet->SetLinearVelocity(b2Vec2(kBulletSpeed, 0.0f));
     }
+
     if (bullet->GetPosition().x > getWindowWidth() ||
         bullet->GetPosition().x < 0) {
-      //      engine_.GetBullets().erase(std::remove(engine_.GetBullets().begin(),
-      //                                          engine_.GetBullets().end(),
-      //                                          bullet),
-      //                              engine_.GetBullets().end());
       engine_.RemoveBullet(bullet);
     }
     cinder::gl::popModelMatrix();
   }
 }
 
-void MyApp::DrawAliens() {
+void SpaceImpactApp::DrawAliens() const {
   for (const auto& alien : engine_.GetAliens()) {
     cinder::gl::color(1, 1, 1);
 
     cinder::gl::pushModelMatrix();
     cinder::gl::translate(alien->GetPosition().x, alien->GetPosition().y);
-    cinder::Rectf drawRect(-20, -20, 20, 20);
-    cinder::gl::draw(alien_texture_, drawRect);
+    cinder::Rectf drawRect(-kAlienSize, -kAlienSize, kAlienSize, kAlienSize);
+    cinder::gl::draw(alien_image_, drawRect);
     cinder::gl::popModelMatrix();
   }
 }
 
-void MyApp::DrawShields() {
+void SpaceImpactApp::DrawShields() const {
   for (const auto& shield : engine_.GetShields()) {
     cinder::gl::color(0, 1, 0);
 
     cinder::gl::pushModelMatrix();
     cinder::gl::translate(shield->GetPosition().x, shield->GetPosition().y);
-    cinder::Rectf drawRect(-20, -30, 20, 30);
-    cinder::gl::draw(shield_texture_, drawRect);
+    cinder::Rectf drawRect(-kShieldSize, -kShieldSize, kShieldSize,
+                           kShieldSize);
+    cinder::gl::draw(shield_image_, drawRect);
     cinder::gl::popModelMatrix();
   }
 }
 
-void MyApp::AddShip() {
+void SpaceImpactApp::AddPlayer() {
   cinder::gl::color(0.68, 0.68, 0.68);
   cinder::gl::pushModelMatrix();
   cinder::gl::translate(player_.GetBody()->GetPosition().x,
                         player_.GetBody()->GetPosition().y);
 
-  cinder::Rectf drawRect(-40, -40, 40, 40);
+  cinder::Rectf drawRect(-kShipSize, -kShipSize, kShipSize, kShipSize);
 
-  cinder::gl::draw(ship_texture_, drawRect);
+  cinder::gl::draw(ship_image_, drawRect);
   cinder::gl::popModelMatrix();
 }
 
@@ -267,7 +279,7 @@ void PrintText(const std::string& text, const C& color,
   cinder::gl::draw(texture, locp);
 }
 
-void MyApp::DrawGameOver() {
+void SpaceImpactApp::DrawGameOver() {
   // Lazily print.
   if (top_players_.empty()) return;
   if (player_scores_.empty()) return;
@@ -278,24 +290,24 @@ void MyApp::DrawGameOver() {
 
   size_t row = 0;
   PrintText("Game Over :(", color, size, center);
-  for (const mylibrary::Player& player : top_players_) {
+  for (const spaceimpact::Player& player : top_players_) {
     std::stringstream ss;
-    ss << player.name << " - " << player.score;
+    ss << player.name_ << " - " << player.score_;
     PrintText(ss.str(), color, size, {center.x, center.y + (++row) * 50});
   }
 
   size_t score_count = 0;
-  std::string player_name = player_scores_.at(0).name;
+  std::string player_name = player_scores_.at(0).name_;
 
-  for (const mylibrary::Player& player : player_scores_) {
+  for (const spaceimpact::Player& player : player_scores_) {
     std::stringstream ss;
     ss << "High score " << ++score_count << " for " << player_name << " - ";
-    ss << player.score;
+    ss << player.score_;
     PrintText(ss.str(), color, size, {center.x, center.y + (++row) * 50});
   }
 }
 
-void MyApp::DrawMenu() {
+void SpaceImpactApp::DrawMenu() const {
   const cinder::vec2 center = getWindowCenter();
   const cinder::ivec2 size = {550, 500};
   cinder::Color color = {1, 1, 0};
@@ -320,12 +332,12 @@ void MyApp::DrawMenu() {
   cinder::gl::pushModelMatrix();
   cinder::gl::translate({getWindowCenter().x, getWindowCenter().y + 225});
   cinder::Rectf drawRect(-200, -80, 200, 80);
-  cinder::gl::draw(welcome_texture_, drawRect);
+  cinder::gl::draw(menu_image_, drawRect);
   cinder::gl::popModelMatrix();
 }
 
-void MyApp::DrawMyScore() const {
-  const std::string text = "Score: " + std::to_string(player_.score);
+void SpaceImpactApp::DrawScore() const {
+  const std::string text = "Score: " + std::to_string(player_.score_);
   const cinder::Color color = {1, 1, 0};
   const cinder::ivec2 size = {200, 50};
   const cinder::vec2 loc = {650, 50};
@@ -333,7 +345,7 @@ void MyApp::DrawMyScore() const {
   PrintText(text, color, size, loc);
 }
 
-void MyApp::DrawTime() const {
+void SpaceImpactApp::DrawTime() const {
   const std::string text = "Time: " + std::to_string(timer_.getSeconds());
   const cinder::Color color = {1, 1, 0};
   const cinder::ivec2 size = {275, 50};
@@ -342,8 +354,8 @@ void MyApp::DrawTime() const {
   PrintText(text, color, size, loc);
 }
 
-void MyApp::DrawWave() const {
-  const std::string text = "Wave: " + std::to_string(count_wave_);
+void SpaceImpactApp::DrawWave() const {
+  const std::string text = "Wave: " + std::to_string(num_wave_);
   const cinder::Color color = {1, 1, 0};
   const cinder::ivec2 size = {150, 50};
   const cinder::vec2 loc = {125, 50};
@@ -351,9 +363,9 @@ void MyApp::DrawWave() const {
   PrintText(text, color, size, loc);
 }
 
-bool MyApp::CrossBoundary() {
+bool SpaceImpactApp::CrossesBoundary() {
   return player_.GetBody()->GetPosition().y <= 0 ||
          player_.GetBody()->GetPosition().y >= getWindowHeight();
 }
 
-}  // namespace myapp
+}  // namespace spaceimpactapp
