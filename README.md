@@ -16,8 +16,8 @@ layout.
 - [cinder](https://libcinder.org)
 - [sqlite-modern-cpp](https://github.com/SqliteModernCpp/sqlite_modern_cpp.git)
 - [sqlite3](https://github.com/alex85k/sqlite3-cmake.git)
-- [sqlite3](https://github.com/alex85k/sqlite3-cmake.git)
 - [box2d](https://github.com/cinder/Cinder/tree/master/blocks/Box2D)
+- [gflags](https://github.com/gflags/gflags.git)
 
 ## Controls
 
@@ -32,6 +32,7 @@ layout.
 
 ### Instructions
 
+- Add your name using gflags in 'Edit Configurations'
 - Shoot all aliens in a wave to spawn the next wave
 - Avoid the aliens' bullets
 - Don't go past the game window bounds
