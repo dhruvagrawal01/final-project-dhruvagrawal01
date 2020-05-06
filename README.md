@@ -1,4 +1,4 @@
-# Final Project
+# Space Impact
 
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![docs](https://img.shields.io/badge/docs-yes-brightgreen)](docs/README.md)
@@ -29,6 +29,7 @@ layout.
 | `Down`    | Move down                 |
 | `SPACE`   | Shoot                     |
 | `r`       | Reset Game                |
+| `ENTER`   | Start game after welcome  |
 
 ### Instructions
 

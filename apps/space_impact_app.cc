@@ -212,6 +212,7 @@ void SpaceImpactApp::SetupUtils() {
 }
 
 void SpaceImpactApp::DrawBullets() {
+  // use 'auto' because it's used in Box2D documentation
   for (const auto& bullet : engine_.GetBullets()) {
     cinder::gl::color(1, 0, 0);
     cinder::gl::pushModelMatrix();
@@ -236,6 +237,7 @@ void SpaceImpactApp::DrawBullets() {
 }
 
 void SpaceImpactApp::DrawAliens() const {
+  // use 'auto' because it's used in Box2D documentation
   for (const auto& alien : engine_.GetAliens()) {
     cinder::gl::color(1, 1, 1);
 
@@ -248,6 +250,7 @@ void SpaceImpactApp::DrawAliens() const {
 }
 
 void SpaceImpactApp::DrawShields() const {
+  // use 'auto' because it's used in Box2D documentation
   for (const auto& shield : engine_.GetShields()) {
     cinder::gl::color(0, 1, 0);
 
