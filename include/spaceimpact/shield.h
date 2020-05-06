@@ -21,7 +21,7 @@ class Shield {
   size_t y_;
 
  public:
-  Shield(b2World* mWorld_, size_t x, size_t y);
+  Shield(b2World* world_, size_t x, size_t y);
   b2Body* GetBody();
 };
 

@@ -8,7 +8,7 @@ namespace spaceimpact {
 
 const int kShieldSize = 25;
 
-Shield::Shield(b2World* mWorld_, size_t x, size_t y) {
+Shield::Shield(b2World* world_, size_t x, size_t y) {
   this->x_ = x;
   this->y_ = y;
 
@@ -16,7 +16,7 @@ Shield::Shield(b2World* mWorld_, size_t x, size_t y) {
   // Set up as a static body because it is stationary
   bodyDef.type = b2_staticBody;
   bodyDef.position.Set(x, y);
-  body_ = mWorld_->CreateBody(&bodyDef);
+  body_ = world_->CreateBody(&bodyDef);
 
   // Used to identify the object type during collisions
   body_->SetUserData((void*)"shield");

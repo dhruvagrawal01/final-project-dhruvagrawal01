@@ -8,12 +8,12 @@ namespace spaceimpact {
 
 const int kPlayerSize = 30;
 
-void Player::SetBody(b2World* mWorld_) {
+void Player::SetBody(b2World* world_) {
   b2BodyDef bodyDef;
   // Set up as a kinematic body because it moves but doesn't react to forces
   bodyDef.type = b2_kinematicBody;
   bodyDef.position.Set(x_, y_);
-  body_ = mWorld_->CreateBody(&bodyDef);
+  body_ = world_->CreateBody(&bodyDef);
 
   // Used to identify the object type during collisions
   body_->SetUserData((void*)"player");

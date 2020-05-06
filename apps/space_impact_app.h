@@ -122,7 +122,7 @@ class SpaceImpactApp : public cinder::app::App {
   std::vector<spaceimpact::Player> top_players_;
   std::vector<spaceimpact::Player> player_scores_;
   // The current alien wave's number
-  int num_wave_ = 0;
+  size_t num_wave_ = 0;
 };
 
 }  // namespace spaceimpactapp

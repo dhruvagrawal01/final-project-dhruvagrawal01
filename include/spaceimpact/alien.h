@@ -21,7 +21,7 @@ class Alien {
   size_t y_;
 
  public:
-  Alien(b2World* mWorld_, size_t x, size_t y);
+  Alien(b2World* world_, size_t x, size_t y);
   b2Body* GetBody();
 };
 

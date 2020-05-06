@@ -2,56 +2,9 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include <spaceimpact/alien.h>
 #include <spaceimpact/engine.h>
-#include <spaceimpact/player.h>
 
 #include <catch2/catch.hpp>
-
-TEST_CASE("Player", "[Player]") {
-  b2Vec2 gravity(0.0f, 0.0f);
-  b2World* world = new b2World(gravity);
-  spaceimpact::Player player;
-  b2Vec2 position = {50, 450};
-
-  SECTION("Testing SetBody") {
-    player.SetBody(world);
-    b2Body* body = player.GetBody();
-    REQUIRE(body->GetType() == b2_kinematicBody);
-    REQUIRE(body->GetUserData() == "player");
-    REQUIRE(body->GetPosition() == position);
-  }
-
-  SECTION("Testing Reset") {
-    player.time_ = 20;
-    player.score_ = 500;
-    player.Reset();
-    REQUIRE(player.time_ == 0);
-    REQUIRE(player.score_ == 0);
-  }
-}
-
-TEST_CASE("Alien", "[Alien]") {
-  b2Vec2 gravity(0.0f, 0.0f);
-  b2World* world = new b2World(gravity);
-  b2Vec2 position = {100, 100};
-  spaceimpact::Alien alien = spaceimpact::Alien(world, 100, 100);
-  b2Body* body = alien.GetBody();
-  REQUIRE(body->GetType() == b2_staticBody);
-  REQUIRE(body->GetUserData() == "alien");
-  REQUIRE(body->GetPosition() == position);
-}
-
-TEST_CASE("Shield", "[Shield]") {
-  b2Vec2 gravity(0.0f, 0.0f);
-  b2World* world = new b2World(gravity);
-  b2Vec2 position = {100, 100};
-  spaceimpact::Shield shield = spaceimpact::Shield(world, 100, 100);
-  b2Body* body = shield.GetBody();
-  REQUIRE(body->GetType() == b2_staticBody);
-  REQUIRE(body->GetUserData() == "shield");
-  REQUIRE(body->GetPosition() == position);
-}
 
 TEST_CASE("Engine", "[Engine]") {
   spaceimpact::Engine engine = spaceimpact::Engine(800, 800);
@@ -63,11 +16,13 @@ TEST_CASE("Engine", "[Engine]") {
     std::vector<b2Body*> aliens = engine.GetAliens();
     std::vector<b2Body*> first_row = engine.GetFirstRow();
 
+    // To test if the aliens_ vector is populated correctly
     b2Vec2 position1 = {730, 100};
     REQUIRE(aliens.at(0)->GetType() == b2_staticBody);
     REQUIRE(aliens.at(0)->GetUserData() == "alien");
     REQUIRE(aliens.at(0)->GetPosition() == position1);
 
+    // To test if the first_row_ vector is populated correctly
     b2Vec2 position2 = {520, 100};
     REQUIRE(aliens.at(3)->GetPosition() == position2);
     REQUIRE(first_row.at(0)->GetPosition() == position2);
@@ -78,6 +33,7 @@ TEST_CASE("Engine", "[Engine]") {
 
     std::vector<b2Body*> shields = engine.GetShields();
 
+    // To test if the shields_ vector is populated correctly
     b2Vec2 position = {200, 200};
     REQUIRE(shields.at(0)->GetType() == b2_staticBody);
     REQUIRE(shields.at(0)->GetUserData() == "shield");
@@ -90,11 +46,14 @@ TEST_CASE("Engine", "[Engine]") {
 
     std::vector<b2Body*> bullets = engine.GetBullets();
 
+    // To test if the bullets_ vector is populated correctly
+    // Tests for an alien's bullet
     b2Vec2 position1 = {50, 50};
     REQUIRE(bullets.at(0)->GetType() == b2_dynamicBody);
     REQUIRE(!bullets.at(0)->GetUserData());
     REQUIRE(bullets.at(0)->GetPosition() == position1);
 
+    // Tests for the player's bullet
     b2Vec2 position2 = {50, 100};
     REQUIRE(bullets.at(1)->GetType() == b2_dynamicBody);
     REQUIRE(bullets.at(1)->GetUserData());

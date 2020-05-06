@@ -14,8 +14,8 @@ using std::chrono::system_clock;
 const char kDbPath[] = "finalproject.db";
 const char kNormalFont[] = "Arial";
 const char kBGMusic[] = "bgmusic.mp3";
-const char kAlienDead[] = "invaderkilled.wav";
-const char kPlayerDead[] = "explosion.wav";
+const char kAlienDead[] = "alienkilled.wav";
+const char kPlayerDead[] = "playerkilled.wav";
 const char kBGImage[] = "space.jpg";
 const char kMenuImage[] = "welcome.jpg";
 const char kShipImage[] = "ship.png";
@@ -24,9 +24,11 @@ const char kShieldImage[] = "shield.png";
 const size_t kLimit = 3;
 const float kRadius = 3.0f;
 const double kShootRate = 2;
-const int kScoreIncrement = 25;
+const size_t kScoreIncrement = 25;
+// Initial speed of the player
 const float kStartSpeed = 5.0f;
 const float kBulletSpeed = 40.0f;
+// Can't be made size_t as that doesn't draw the texture
 const int kAlienSize = 20;
 const int kShieldSize = 25;
 const int kShipSize = 40;
@@ -87,14 +89,14 @@ void SpaceImpactApp::update() {
   // To make a random alien in the first row shoot every kShootRate seconds
   if (timer_.getSeconds() > kShootRate && time_since_change >= kShootRate &&
       !engine_.GetFirstRow().empty()) {
-    int rand_alien = cinder::Rand::randInt(0, engine_.GetFirstRow().size());
+    size_t rand_alien = cinder::Rand::randInt(0, engine_.GetFirstRow().size());
     b2Body* alien = engine_.GetFirstRow().at(rand_alien);
     engine_.AddBullet(alien->GetPosition().x - kAlienSize,
                       alien->GetPosition().y, true);
     last_time_ = time;
   }
 
-  for (int i = 0; i < 10; ++i) {
+  for (size_t i = 0; i < 10; ++i) {
     engine_.GetWorld()->Step(1 / 30.0f, 10, 10);
     spaceimpact::ResultantAction action = engine_.Step();
 

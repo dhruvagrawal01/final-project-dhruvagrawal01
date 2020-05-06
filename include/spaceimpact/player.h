@@ -22,7 +22,8 @@ class Player {
   // The player's x-coordinate
   int x_ = 50;
   // The player's y-coordinate
-  int y_ = (cinder::app::getWindowHeight() / 2) + 50;
+  // int y_ = (cinder::app::getWindowHeight() / 2) + 50;
+  int y_ = 450;
 
  public:
   Player() : name_("Random"), score_(0), time_(0) {}
@@ -34,7 +35,7 @@ class Player {
   size_t score_;
   double time_;
 
-  void SetBody(b2World* mWorld_);
+  void SetBody(b2World* world_);
   b2Body* GetBody() const;
 
   /**

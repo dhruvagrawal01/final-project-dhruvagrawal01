@@ -79,14 +79,14 @@ class Engine {
  private:
   const size_t width_;
   const size_t height_;
-  b2World *mWorld_;
+  b2World *world_;
 
  private:
-  std::vector<b2Body *> mBullets_;
-  std::vector<b2Body *> mAliens_;
+  std::vector<b2Body *> bullets_;
+  std::vector<b2Body *> aliens_;
   // The first row of aliens (which shoot bullets back)
   std::vector<b2Body *> first_row_;
-  std::vector<b2Body *> mShields_;
+  std::vector<b2Body *> shields_;
 
   /**
    * Takes the appropriate action based on the collision
